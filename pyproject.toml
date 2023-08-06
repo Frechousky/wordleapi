@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "wordleapi"
+version = "0.1.0"
+description = "Wordle game back-end"
+authors = ["frechousky <alexandre.freche@gmail.com>"]
+license = "GPL"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+Flask = "~2.3.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = "~7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
