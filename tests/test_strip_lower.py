@@ -1,4 +1,4 @@
-from wordleapi.core import strip_lower
+from wordleapi.utils import strip_lower
 
 
 def test_strip_lower():

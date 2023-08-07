@@ -9,9 +9,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 Flask = "~2.3.2"
+pytz = "~2023.3"
 
 [tool.poetry.group.test.dependencies]
 pytest = "~7.4.0"
+freezegun = "~1.2.2"
 
 [build-system]
 requires = ["poetry-core"]
