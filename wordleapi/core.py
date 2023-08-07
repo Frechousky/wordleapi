@@ -82,15 +82,21 @@ def validate_guess(guess: str, whitelist: tuple[str]) -> bool:
 
 def compute_guess_result(guess: str, word: str) -> GuessResult:
     """
+    Check if player guess is correct.
 
+    Compare player guess with word to find and returns a GuessResult.
 
     Args:
-        guess (str): _description_
-        word (str): _description_
+        guess: player guess
+        word: word to find
 
     Returns:
-        GuessResult: _description_
+        GuessResult with success to True if guess is correct,
+        GuessResult with success to False and letter status
+        (either not present, bad position or good position) for each
+        guessed letter
     """
+    assert guess
     assert word
 
     # guess is correct
@@ -107,9 +113,9 @@ def compute_guess_result(guess: str, word: str) -> GuessResult:
 
     # look for bad positioned letters
     for idx, v in enumerate(guess):
+        if result[idx] == LetterPositionStatus.GP:
+            continue
         try:
-            if result[idx] == LetterPositionStatus.GP:
-                continue
             awl_idx = available_word_letters.index(v)
             result[idx] = LetterPositionStatus.BP
             available_word_letters[awl_idx] = None
