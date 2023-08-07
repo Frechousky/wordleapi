@@ -8,8 +8,7 @@ from wordleapi.core import (
     validate_guess,
 )
 
-WHITELIST = ["abcdef", "zyxwv"]
-WORD = "abcdef"
+WHITELIST = ("abcdef", "zyxwvu")
 
 
 @pytest.mark.parametrize(
@@ -21,19 +20,16 @@ WORD = "abcdef"
 )
 def test_validate_guess__guess_is_none__raises_exception(guess: str):
     with pytest.raises(GuessIsEmptyError):
-        validate_guess(guess, WORD, WHITELIST)
+        validate_guess(guess, WHITELIST)
 
 
 @pytest.mark.parametrize(
-    "guess,word",
-    [
-        ("abcde", "abcdef"),
-        ("abcdefgh", "abcdef"),
-    ],
+    "guess",
+    ["abcde", "abcdefgh"],
 )
-def test_validate_guess__wrong_sized_guess__raises_exception(guess: str, word: str):
+def test_validate_guess__wrong_sized_guess__raises_exception(guess: str):
     with pytest.raises(InvalidGuessLengthError):
-        validate_guess(guess, word, WHITELIST)
+        validate_guess(guess, WHITELIST)
 
 
 @pytest.mark.parametrize(
@@ -45,7 +41,7 @@ def test_validate_guess__wrong_sized_guess__raises_exception(guess: str, word: s
 )
 def test_validate_guess__guess_invalid_format__raises_exception(guess: str):
     with pytest.raises(GuessInvalidFormatError):
-        validate_guess(guess, WORD, WHITELIST)
+        validate_guess(guess, WHITELIST)
 
 
 @pytest.mark.parametrize(
@@ -61,9 +57,9 @@ def test_validate_guess__guess_not_in_whitelist__raises_exception(
     assert guess not in whitelist
 
     with pytest.raises(GuessNotInWhitelistError):
-        validate_guess(guess, WORD, whitelist)
+        validate_guess(guess, whitelist)
 
 
 def test_validate_guess__valid_guess__returns_true():
     for guess in WHITELIST:
-        assert validate_guess(guess, guess, WHITELIST)
+        assert validate_guess(guess, WHITELIST)
