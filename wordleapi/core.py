@@ -45,21 +45,6 @@ class GuessResult:
     result: tuple[LetterPositionStatus]
 
 
-def strip_lower(s: str) -> str | None:
-    """
-    Strip a string and lowercase it. If the input is None, it will return None.
-
-    Args:
-        s: String to strip/lowercase
-
-    Returns:
-        Strip lowercase string or None
-    """
-    if s is None:
-        return None
-    return s.strip().lower()
-
-
 GUESS_REGEX = "[a-zA-Z]+"
 GUESS_PATTERN = re.compile(GUESS_REGEX)
 
