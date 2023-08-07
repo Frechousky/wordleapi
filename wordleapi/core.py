@@ -1,6 +1,18 @@
 import dataclasses
 import enum
+import random
 import re
+
+import loguru
+
+from wordleapi.db.model import (
+    add_word_history,
+    commit,
+    delete_word_history_by_word_length,
+    get_all_word_history_by_word_length,
+    get_first_word_history_by_word_length_and_date,
+)
+from wordleapi.utils import now_yyyymmdd
 
 
 class GuessIsEmptyError(Exception):
@@ -123,3 +135,55 @@ def compute_guess_result(guess: str, word: str) -> GuessResult:
             pass
 
     return GuessResult(False, tuple(result))
+
+
+def load_wordlefile(filename: str) -> tuple[str]:
+    """
+    Load wordlefile and extract list of words from it.
+
+    Args:
+        filename: file to read
+
+    Returns:
+        Word list
+
+    Raises:
+        OSError: if file opening fails
+    """
+    loguru.logger.debug("Load wordlefile '{}'", filename)
+    with open(filename) as f:
+        whitelist = tuple([word for word in f.read().split("\n") if word != ""])
+        loguru.logger.debug(f"Found {len(whitelist)} words")
+        return whitelist
+
+
+def get_current_word(whitelist: tuple[str]) -> str:
+    assert whitelist
+
+    word_length = len(whitelist[0])
+
+    # check if today's word is already generated
+    today_word = get_first_word_history_by_word_length_and_date(
+        word_length, now_yyyymmdd()
+    )
+    if today_word:
+        return today_word.word
+
+    # retrieve used words
+    words_history = get_all_word_history_by_word_length(word_length)
+
+    used_words = set(wh.word for wh in words_history)
+    available_words = list(set(whitelist) - used_words)
+    if not len(available_words):
+        # all whitelisted words were used
+        # delete all WordHistory records where word_length=word_length
+        delete_word_history_by_word_length(word_length)
+        available_words = whitelist
+
+    # pick random available word
+    random.seed()
+    word = available_words[random.randint(0, len(available_words) - 1)]
+
+    add_word_history(word, word_length)
+    commit()
+    return word
