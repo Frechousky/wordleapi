@@ -49,16 +49,14 @@ GUESS_REGEX = "[a-zA-Z]+"
 GUESS_PATTERN = re.compile(GUESS_REGEX)
 
 
-def validate_guess(guess: str, word: str, whitelist: list[str]) -> bool:
+def validate_guess(guess: str, whitelist: tuple[str]) -> bool:
     """
     Validate user guess input.
-
-    Guess
+    Raises exception if guess is invalid, returns True otherwise.
 
     Args:
-        guess: str: Store the user's guess
-        word: str: Check the length of the guess
-        whitelist: list[str]: Check if the guess is in the whitelist
+        guess: Store the user's guess
+        whitelist: Check if the guess is in the whitelist
 
     Returns:
         True if the guess is valid, otherwise it raises an error
@@ -69,13 +67,12 @@ def validate_guess(guess: str, word: str, whitelist: list[str]) -> bool:
         GuessInvalidFormatError: if guess is not only characters (lower/upper case)
         GuessNotInWhitelistError: if guess is not a whitelisted word
     """
-    assert word
     assert whitelist
 
     if not guess:
         raise GuessIsEmptyError()
-    if len(guess) != len(word):
-        raise InvalidGuessLengthError(len(word))
+    if len(guess) != len(whitelist[0]):
+        raise InvalidGuessLengthError(len(whitelist[0]))
     if GUESS_PATTERN.fullmatch(guess) is None:
         raise GuessInvalidFormatError()
     if guess not in whitelist:
