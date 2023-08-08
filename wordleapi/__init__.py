@@ -69,7 +69,13 @@ def handle_player_guess(whitelist: tuple[str]):
         )
     word = get_today_word(whitelist)
     loguru.logger.info(f"word: {word}, guess: {guess}")
-    return compute_guess_result(guess, word).__dict__, 200
+
+    guess_result = compute_guess_result(guess, word)
+
+    if not guess_result:
+        return {"success": True}
+
+    return {"success": False, "result": guess_result}
 
 
 def create_app() -> flask.Flask:

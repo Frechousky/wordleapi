@@ -1,4 +1,3 @@
-import dataclasses
 import enum
 import re
 
@@ -41,21 +40,6 @@ class LetterPositionStatus(enum.IntEnum):
     NP = 2  # not present
 
 
-@dataclasses.dataclass
-class GuessResult:
-    """
-    Dataclass to handle player guess result.
-
-    Attributes:
-        success: true if player guessed the word, false otherwise
-        result: contains letter position status (good/bad position or not present)
-                for each letter from player guess
-    """
-
-    success: bool
-    result: tuple[LetterPositionStatus]
-
-
 GUESS_REGEX = "[a-zA-Z]+"
 GUESS_PATTERN = re.compile(GUESS_REGEX)
 
@@ -91,28 +75,24 @@ def validate_guess(guess: str, whitelist: tuple[str]) -> bool:
     return True
 
 
-def compute_guess_result(guess: str, word: str) -> GuessResult:
+def compute_guess_result(guess: str, word: str) -> list[LetterPositionStatus]:
     """
     Check if player guess is correct.
-
-    Compare player guess with word to find and returns a GuessResult.
 
     Args:
         guess: player guess
         word: word to find
 
     Returns:
-        GuessResult with success to True if guess is correct,
-        GuessResult with success to False and letter status
-        (either not present, bad position or good position) for each
-        guessed letter
+        [] if guess is correct
+        List of position status (either not present, bad position or good position) for each letter in guess
     """
     assert guess
     assert word
 
     # guess is correct
     if guess == word:
-        return GuessResult(True, None)
+        return []
 
     # look for good positioned letters
     available_word_letters = [letter for letter in word]
@@ -133,7 +113,7 @@ def compute_guess_result(guess: str, word: str) -> GuessResult:
         except ValueError:
             pass
 
-    return GuessResult(False, tuple(result))
+    return result
 
 
 def load_wordlefile(filename: str) -> tuple[str]:
