@@ -3,6 +3,16 @@ import enum
 import os
 
 import click
+import loguru
+
+
+class MissingDotEnvKeyError(Exception):
+    def __init__(self, missing_keys: list[str], *args, **kwargs):
+        super().__init__(args, kwargs)
+        self.__missing_keys = missing_keys
+
+    def __str__(self):
+        return f"missing keys {self.__missing_keys} from .env file"
 
 
 class DotEnvKey(enum.Enum):
@@ -31,6 +41,25 @@ def _generate_default_dot_env(outputdir: str):
     with open(os.path.join(outputdir, ".env.default"), "w") as f:
         for k in _DEFAULT_VALUES.keys():
             f.write(f"{k}={_DEFAULT_VALUES.get(k)}\n")
+
+
+def check_dot_env() -> None:
+    """
+    Check that all .env keys were read from .env files.
+
+    Returns:
+        None
+
+    Raises:
+        MissingDotEnvKeyError if any key/value pair is missing
+    """
+    missing_keys = []
+    for dek in DotEnvKey:
+        if not os.getenv(dek.value):
+            loguru.logger.critical("missing .env key/value pair '{}'", dek.value)
+            missing_keys.append(dek.value)
+    if missing_keys:
+        raise MissingDotEnvKeyError(missing_keys)
 
 
 if __name__ == "__main__":

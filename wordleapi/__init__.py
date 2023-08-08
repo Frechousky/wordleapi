@@ -17,7 +17,7 @@ from wordleapi.core import (
     validate_guess,
 )
 from wordleapi.db.model import db
-from wordleapi.env import DotEnvKey
+from wordleapi.env import DotEnvKey, check_dot_env
 
 
 class ErrorCode(enum.Enum):
@@ -79,7 +79,9 @@ def handle_player_guess(whitelist: tuple[str]):
 
 
 def create_app() -> flask.Flask:
-    dotenv.load_dotenv(verbose=True)
+    dotenv.load_dotenv()
+
+    check_dot_env()
 
     app = flask.Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
