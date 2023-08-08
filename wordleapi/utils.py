@@ -34,7 +34,6 @@ def strip_lower(s: str) -> str | None:
     return s.strip().lower()
 
 
-def pick_random_element(_list: list | tuple):
+def pick_random_element(seq: list | tuple):
     random.seed()
-    word = _list[random.randint(0, len(_list) - 1)]
-    return word
+    return seq[random.randrange(len(seq))]
