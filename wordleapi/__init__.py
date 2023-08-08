@@ -12,7 +12,7 @@ from wordleapi.core import (
     GuessNotInWhitelistError,
     InvalidGuessLengthError,
     compute_guess_result,
-    get_current_word,
+    get_today_word,
     load_wordlefile,
     validate_guess,
 )
@@ -67,7 +67,7 @@ def handle_player_guess(whitelist: tuple[str]):
             ),
             422,
         )
-    word = get_current_word(whitelist)
+    word = get_today_word(whitelist)
     loguru.logger.info(f"word: {word}, guess: {guess}")
     return compute_guess_result(guess, word).__dict__, 200
 

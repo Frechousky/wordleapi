@@ -1,4 +1,5 @@
 import datetime
+import random
 
 import pytz
 
@@ -31,3 +32,9 @@ def strip_lower(s: str) -> str | None:
     if s is None:
         return None
     return s.strip().lower()
+
+
+def pick_random_element(_list: list | tuple):
+    random.seed()
+    word = _list[random.randint(0, len(_list) - 1)]
+    return word
