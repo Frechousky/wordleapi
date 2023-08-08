@@ -5,11 +5,11 @@ import re
 import loguru
 
 from wordleapi.db.model import (
-    add_word_history,
+    add_played_word,
     commit,
-    delete_word_history_by_word_length,
-    get_all_word_history_by_word_length,
-    get_first_word_history_by_word_length_and_date,
+    delete_played_word_by_word_length,
+    get_all_played_word_by_word_length,
+    get_first_played_word_by_word_length_and_date,
 )
 from wordleapi.utils import now_yyyymmdd, pick_random_element
 
@@ -70,7 +70,7 @@ def validate_guess(guess: str, whitelist: tuple[str]) -> bool:
         whitelist: Check if the guess is in the whitelist
 
     Returns:
-        True if the guess is valid, otherwise it raises an error
+        True if the guess is valid
 
     Raises:
         GuessIsEmptyError: if guess is None or ""
@@ -157,27 +157,48 @@ def load_wordlefile(filename: str) -> tuple[str]:
 
 
 def get_today_word(whitelist: tuple[str]) -> str:
+    """
+    Get today word to guess by retrieving it from database or picking a random non-played word.
+
+    Played word are stored in database.
+    If today word is in database returns it, otherwise pick a random word from whitelist which is not in played word
+    database and returns it.
+    If all whitelist words have already been played, clean played word from database.
+
+    Args:
+        whitelist: list of available words
+
+    Returns:
+        Today word
+    """
     assert whitelist
 
     word_length = len(whitelist[0])
 
     # check if today's word is already generated
-    today_word = get_first_word_history_by_word_length_and_date(
+    today_word = get_first_played_word_by_word_length_and_date(
         word_length, now_yyyymmdd()
     )
     if today_word:
         return today_word.word
 
-    # retrieve used words
-    words_history = get_all_word_history_by_word_length(word_length)
-    available_words = tuple(set(whitelist) - set(wh.word for wh in words_history))
+    # retrieve already played words
+    already_played_words = get_all_played_word_by_word_length(word_length)
+
+    available_words = tuple(
+        set(whitelist) - set(wh.word for wh in already_played_words)
+    )
     if not available_words:
-        # all whitelisted words were used
-        # delete all WordHistory records where word_length=word_length
-        delete_word_history_by_word_length(word_length)
+        # all whitelisted words were played
+        # clean word history from database
+        delete_played_word_by_word_length(word_length)
         available_words = whitelist
+
+    # pick random word
     word = pick_random_element(available_words)
 
-    add_word_history(word, word_length)
+    # save word to database
+    add_played_word(word, word_length)
     commit()
+
     return word
