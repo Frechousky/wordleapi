@@ -35,5 +35,14 @@ def strip_lower(s: str) -> str | None:
 
 
 def pick_random_element(seq: list | tuple):
+    """
+    Picks a random element from a tuple or list.
+
+    Args:
+        seq: sequence to pick a random element from
+
+    Returns:
+        Random element from seq
+    """
     random.seed()
     return seq[random.randrange(len(seq))]
