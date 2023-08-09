@@ -18,6 +18,7 @@ from wordleapi.core import (
 )
 from wordleapi.db.model import db
 from wordleapi.env import DotEnvKey, check_dot_env
+from wordleapi.utils import strip_lower
 
 
 class ErrorCode(enum.Enum):
@@ -33,6 +34,7 @@ def build_error_response(code: ErrorCode, error_msg: str) -> dict:
 
 def handle_player_guess(whitelist: tuple[str]):
     guess = flask.request.form.get("guess", None)
+    guess = strip_lower(flask.request.form.get("guess", None))
     try:
         validate_guess(guess, whitelist)
     except InvalidGuessLengthError as e:
