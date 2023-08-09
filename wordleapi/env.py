@@ -12,7 +12,10 @@ class MissingDotEnvKeyError(Exception):
         self.__missing_keys = missing_keys
 
     def __str__(self):
-        return f"missing keys {self.__missing_keys} from .env file"
+        return (
+            f"Missing keys {self.__missing_keys} from .env file. "
+            f"Make sure to add these keys to .env file before restarting app."
+        )
 
 
 class DotEnvKey(enum.Enum):
@@ -56,8 +59,9 @@ def check_dot_env() -> None:
     missing_keys = []
     for dek in DotEnvKey:
         if not os.getenv(dek.value):
-            loguru.logger.critical("missing .env key/value pair '{}'", dek.value)
+            loguru.logger.critical("Missing .env key/value pair '{}'", dek.value)
             missing_keys.append(dek.value)
+        loguru.logger.debug("'{}' key/value pair loaded from .env", dek.value)
     if missing_keys:
         raise MissingDotEnvKeyError(missing_keys)
 

@@ -64,14 +64,22 @@ def validate_guess(guess: str, whitelist: tuple[str]) -> bool:
     """
     assert whitelist
 
+    loguru.logger.debug("(guess: '{}')", guess)
+
     if not guess:
+        loguru.logger.debug("(guess: '{}') => GuessIsEmptyError", guess)
         raise GuessIsEmptyError()
     if len(guess) != len(whitelist[0]):
+        loguru.logger.debug("(guess: '{}') => InvalidGuessLengthError", guess)
         raise InvalidGuessLengthError(len(whitelist[0]))
     if GUESS_PATTERN.fullmatch(guess) is None:
+        loguru.logger.debug("(guess: '{}') => GuessInvalidFormatError", guess)
         raise GuessInvalidFormatError()
     if guess not in whitelist:
+        loguru.logger.debug("(guess: '{}') => GuessNotInWhitelistError", guess)
         raise GuessNotInWhitelistError()
+
+    loguru.logger.debug("(guess: '{}') => True", guess)
     return True
 
 
@@ -92,6 +100,9 @@ def compute_guess_result(guess: str, word: str) -> list[LetterPositionStatus]:
 
     # guess is correct
     if guess == word:
+        loguru.logger.debug(
+            "(guess: '{}', word: '{}') => [] (correct guess)", guess, word
+        )
         return []
 
     # look for good positioned letters
@@ -113,6 +124,12 @@ def compute_guess_result(guess: str, word: str) -> list[LetterPositionStatus]:
         except ValueError:
             pass
 
+    loguru.logger.debug(
+        "(guess: '{}', word: '{}') => {} (incorrect guess)",
+        guess,
+        word,
+        [lps.value for lps in result],
+    )
     return result
 
 
@@ -129,10 +146,10 @@ def load_wordlefile(filename: str) -> tuple[str]:
     Raises:
         OSError: if file opening fails
     """
-    loguru.logger.debug("Load wordlefile '{}'", filename)
+    loguru.logger.info("Load wordlefile '{}'", filename)
     with open(filename) as f:
         whitelist = tuple([word for word in f.read().split("\n") if word != ""])
-        loguru.logger.debug(f"Found {len(whitelist)} words")
+        loguru.logger.info("Found {} words in '{}'", len(whitelist), filename)
         return whitelist
 
 
@@ -160,22 +177,32 @@ def get_today_word(whitelist: tuple[str]) -> str:
         word_length, now_yyyymmdd()
     )
     if today_word:
+        loguru.logger.debug("Today {} letters word already generated", word_length)
         return today_word.word
 
     # retrieve already played words
+    loguru.logger.info("Generate today {} letters word", word_length)
     already_played_words = get_all_played_word_by_word_length(word_length)
 
     available_words = tuple(
         set(whitelist) - set(wh.word for wh in already_played_words)
     )
+
     if not available_words:
         # all whitelisted words were played
-        # clean word history from database
+        # clean played_word table
+        loguru.logger.info(
+            "All {} letters word were played, clean played_word table", word_length
+        )
         delete_played_word_by_word_length(word_length)
         available_words = whitelist
+    loguru.logger.info(
+        "{} available {} letters word", len(available_words), word_length
+    )
 
     # pick random word
     word = pick_random_element(available_words)
+    loguru.logger.info("Today {} letters word is '{}'", word_length, word)
 
     # save word to database
     add_played_word(word, word_length)

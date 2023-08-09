@@ -33,8 +33,8 @@ def build_error_response(code: ErrorCode, error_msg: str) -> dict:
 
 
 def handle_player_guess(whitelist: tuple[str]):
-    guess = flask.request.form.get("guess", None)
     guess = strip_lower(flask.request.form.get("guess", None))
+    loguru.logger.debug("(guess: '{}')", guess)
     try:
         validate_guess(guess, whitelist)
     except InvalidGuessLengthError as e:
@@ -70,8 +70,6 @@ def handle_player_guess(whitelist: tuple[str]):
             422,
         )
     word = get_today_word(whitelist)
-    loguru.logger.info(f"word: {word}, guess: {guess}")
-
     guess_result = compute_guess_result(guess, word)
 
     if not guess_result:
@@ -81,15 +79,19 @@ def handle_player_guess(whitelist: tuple[str]):
 
 
 def create_app() -> flask.Flask:
-    dotenv.load_dotenv()
+    loguru.logger.info("Init app")
 
+    loguru.logger.info("Load .env file")
+    dotenv.load_dotenv()
     check_dot_env()
+    loguru.logger.info("Required key/value pairs loaded from .env file")
 
     app = flask.Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
         DotEnvKey.SQLALCHEMY_DATABASE_URI.value
     )
 
+    loguru.logger.info("Init database")
     db.init_app(app)
 
     with app.app_context():
@@ -105,6 +107,8 @@ def create_app() -> flask.Flask:
         os.getenv(DotEnvKey.WORDLEFILE_8_LETTERS.value)
     )
 
+    loguru.logger.info("Init API routes")
+
     @app.route("/word/6/guess", methods=["POST"])
     def handle_player_guess_six_letters():
         return handle_player_guess(whitelist_6_letters)
@@ -117,4 +121,5 @@ def create_app() -> flask.Flask:
     def handle_player_guess_eight_letters():
         return handle_player_guess(whitelist_8_letters)
 
+    loguru.logger.info("App init is successful")
     return app
