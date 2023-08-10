@@ -3,6 +3,7 @@ import os
 
 import dotenv
 import flask
+import flask_cors
 import loguru
 
 from wordleapi.core import (
@@ -90,6 +91,9 @@ def create_app() -> flask.Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
         DotEnvKey.SQLALCHEMY_DATABASE_URI.value
     )
+
+    loguru.logger.info("Configure CORS")
+    flask_cors.CORS(app)
 
     loguru.logger.info("Init database")
     db.init_app(app)
