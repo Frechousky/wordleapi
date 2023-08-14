@@ -2,7 +2,7 @@ from unittest.mock import patch, Mock
 
 import pytest
 
-from wordleapi import get_today_word
+from wordleapi.core import get_today_word
 from wordleapi.db.model import PlayedWord
 from wordleapi.utils import now_yyyymmdd
 
