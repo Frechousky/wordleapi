@@ -1,5 +1,5 @@
 run:
-	poetry run flask --app wordleapi run
+	poetry run gunicorn --bind 0.0.0.0:5000 wordleapi.wsgi:app
 
 test:
 	poetry run pytest
