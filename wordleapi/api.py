@@ -82,10 +82,15 @@ def handle_player_guess(whitelist: tuple[str]):
 def create_app() -> flask.Flask:
     loguru.logger.info("Init app")
 
-    loguru.logger.info("Load .env file")
-    dotenv.load_dotenv()
+    if dotenv.load_dotenv():
+        loguru.logger.info("Env variables loaded from .env file")
+    else:
+        loguru.logger.info(
+            "No env variable loaded from .env file (file could be missing or empty)"
+        )
+
     check_dot_env()
-    loguru.logger.info("Required key/value pairs loaded from .env file")
+    loguru.logger.info("Required env variables loaded")
 
     app = flask.Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(DotEnvKey.DATABASE_URI.value)
