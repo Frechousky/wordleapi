@@ -1,0 +1,21 @@
+[[source]]
+verify_ssl = true
+name = "wordleapi"
+
+[packages]
+Flask = "==2.3.*"
+python-dotenv = "==1.0.*"
+loguru = "==0.7.*"
+pytz = "==2023.*"
+flask-sqlalchemy = "==3.0.*"
+flask-cors = "==4.0.*"
+gunicorn = "==21.2.*"
+
+[dev-packages]
+click = "==8.1.*"
+pre-commit = "==3.3.*"
+pytest = "==7.4.*"
+freezegun = "==1.2.*"
+
+[requires]
+python_version = "3.11"

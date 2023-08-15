@@ -1,16 +1,13 @@
 run:
-	poetry run gunicorn --bind 0.0.0.0:5000 wordleapi.wsgi:app
+	pipenv run gunicorn --bind 0.0.0.0:5000 wordleapi.wsgi:app
 
 test:
-	poetry run pytest
+	pipenv run pytest
 
 install-deps:
-	poetry install
+	pipenv sync -d
 
 update-deps:
-	poetry update
+	pipenv update
 
-build:
-	poetry build
-
-.PHONY: run test install-deps update-deps build
+.PHONY: run test install-deps update-deps
