@@ -19,14 +19,14 @@ class MissingDotEnvKeyError(Exception):
 
 
 class DotEnvKey(enum.Enum):
-    SQLALCHEMY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
+    DATABASE_URI = "DATABASE_URI"
     WORDLEFILE_6_LETTERS = "WORDLEFILE_6_LETTERS"
     WORDLEFILE_7_LETTERS = "WORDLEFILE_7_LETTERS"
     WORDLEFILE_8_LETTERS = "WORDLEFILE_8_LETTERS"
 
 
 _DEFAULT_VALUES = {
-    DotEnvKey.SQLALCHEMY_DATABASE_URI.value: "dialect+driver://username:password@host:port/database",
+    DotEnvKey.DATABASE_URI.value: "dialect+driver://username:password@host:port/database",
     DotEnvKey.WORDLEFILE_6_LETTERS.value: "/path/to/wordlefile",
     DotEnvKey.WORDLEFILE_7_LETTERS.value: "/path/to/wordlefile",
     DotEnvKey.WORDLEFILE_8_LETTERS.value: "/path/to/wordlefile",

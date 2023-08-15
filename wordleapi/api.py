@@ -88,9 +88,7 @@ def create_app() -> flask.Flask:
     loguru.logger.info("Required key/value pairs loaded from .env file")
 
     app = flask.Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        DotEnvKey.SQLALCHEMY_DATABASE_URI.value
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(DotEnvKey.DATABASE_URI.value)
 
     loguru.logger.info("Configure CORS")
     flask_cors.CORS(app)
