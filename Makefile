@@ -5,9 +5,12 @@ test:
 	pipenv run pytest
 
 install-deps:
+	pipenv sync
+
+install-all-deps:
 	pipenv sync -d
 
 update-deps:
 	pipenv update
 
-.PHONY: run test install-deps update-deps
+.PHONY: run test install-deps install-all-deps update-deps
