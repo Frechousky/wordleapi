@@ -16,4 +16,10 @@ install-all-deps:
 update-deps:
 	pipenv update
 
-.PHONY: run test test-unit install-deps install-all-deps update-deps
+lint:
+	pipenv run ruff check .
+
+format:
+	pipenv run ruff format .
+
+.PHONY: run test test-unit install-deps install-all-deps update-deps lint format
