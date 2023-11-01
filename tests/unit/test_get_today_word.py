@@ -52,16 +52,19 @@ def test_get_today_word__if_all_whitelisted_words_were_not_played__does_not_dele
 
     assert get_today_word(whitelist) == word
 
-    mock_get_first_word.assert_called_with(
-        word_length, now_yyyymmdd()
-    ), "should retrieve today word"
-    mock_get_all_word.assert_called_with(
-        word_length
-    ), "should retrieve played word from database"
+    (
+        mock_get_first_word.assert_called_with(word_length, now_yyyymmdd()),
+        "should retrieve today word",
+    )
+    (
+        mock_get_all_word.assert_called_with(word_length),
+        "should retrieve played word from database",
+    )
     mock_delete_word.assert_not_called(), "should not delete played words from database"
-    mock_add_word.assert_called_once_with(
-        word, len(word)
-    ), "should add word to database"
+    (
+        mock_add_word.assert_called_once_with(word, len(word)),
+        "should add word to database",
+    )
     mock_commit.assert_called_once(), "should commit"
 
 
@@ -87,10 +90,14 @@ def test_get_today_word__if_today_word_was_generated__returns_it(
 
     assert get_today_word(tuple([word])) == word
 
-    mock_get_first_word.assert_called_with(
-        word_length, now_yyyymmdd()
-    ), "should retrieve today word"
-    mock_get_all_word.assert_not_called(), "should not retrieve played word from database"
+    (
+        mock_get_first_word.assert_called_with(word_length, now_yyyymmdd()),
+        "should retrieve today word",
+    )
+    (
+        mock_get_all_word.assert_not_called(),
+        "should not retrieve played word from database",
+    )
     mock_delete_word.assert_not_called(), "should not delete played words from database"
     mock_pick_random.assert_not_called(), "should not pick random word"
     mock_add_word.assert_not_called(), "should not add word to database"
@@ -157,16 +164,20 @@ def test_get_today_word__if_all_whitelisted_words_were_played__deletes_played_wo
 
     assert get_today_word(whitelist) == word
 
-    mock_get_first_word.assert_called_with(
-        word_length, now_yyyymmdd()
-    ), "should retrieve today word"
-    mock_get_all_word.assert_called_with(
-        word_length
-    ), "should retrieve played word from database"
-    mock_delete_word.assert_called_with(
-        word_length
-    ), "should delete played words from database"
-    mock_add_word.assert_called_once_with(
-        word, len(word)
-    ), "should add word to database"
+    (
+        mock_get_first_word.assert_called_with(word_length, now_yyyymmdd()),
+        "should retrieve today word",
+    )
+    (
+        mock_get_all_word.assert_called_with(word_length),
+        "should retrieve played word from database",
+    )
+    (
+        mock_delete_word.assert_called_with(word_length),
+        "should delete played words from database",
+    )
+    (
+        mock_add_word.assert_called_once_with(word, len(word)),
+        "should add word to database",
+    )
     mock_commit.assert_called_once(), "should commit"
