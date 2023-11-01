@@ -4,7 +4,7 @@ run:
 test:
 	pipenv run pytest
 
-unit-test:
+test-unit:
 	pipenv run pytest tests/unit
 
 install-deps:
@@ -16,4 +16,4 @@ install-all-deps:
 update-deps:
 	pipenv update
 
-.PHONY: run test unit-test install-deps install-all-deps update-deps
+.PHONY: run test test-unit install-deps install-all-deps update-deps
