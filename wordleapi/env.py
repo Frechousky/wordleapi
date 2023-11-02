@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import enum
 import os
+import sys
 
 import click
 import loguru
@@ -97,7 +98,7 @@ def generate_default(outputdir: str):
     """
     Generate ".env.default" file with default values.
     """
-    _generate_dot_env_file(outputdir, ".env.default", _DEFAULT_VALUES)
+    return _generate_dot_env_file(outputdir, ".env.default", _DEFAULT_VALUES)
 
 
 @cli.command()
@@ -108,7 +109,7 @@ def generate_integration(outputdir: str):
     """
     Generate ".env.inte" file.
     """
-    _generate_dot_env_file(outputdir, ".env.inte", _INTE_VALUES)
+    return _generate_dot_env_file(outputdir, ".env.inte", _INTE_VALUES)
 
 
 if __name__ == "__main__":
