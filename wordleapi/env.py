@@ -61,7 +61,7 @@ _INTE_VALUES = {
 }
 
 
-def _generate_dot_env_file(outputdir: str, filename: str, kv: dict):
+def _generate_dot_env_file(outputdir: str, filename: str, kv: dict) -> None:
     """
     Generate .env file
 
@@ -69,16 +69,14 @@ def _generate_dot_env_file(outputdir: str, filename: str, kv: dict):
         outputdir: output dir to generate file
         filename: name of file to generate
         kv: key value pairs
-
-    Returns: -1 on failure, 0 on success
     """
     if [key.name for key in DotEnvKey] != [key for key in kv.keys()]:
-        loguru.logger.error("invalid or missing dot env keys")
-        return -1
+        error_msg = "invalid or missing dot env keys"
+        loguru.logger.error(error_msg)
+        raise click.ClickException(error_msg)
     with open(os.path.join(outputdir, filename), "w") as f:
         for key in kv:
             f.write(f"{key}={kv.get(key)}\n")
-    return 0
 
 
 @click.group()
@@ -97,7 +95,7 @@ def generate_default(outputdir: str):
     """
     Generate ".env.default" file with default values.
     """
-    return _generate_dot_env_file(outputdir, ".env.default", _DEFAULT_VALUES)
+    _generate_dot_env_file(outputdir, ".env.default", _DEFAULT_VALUES)
 
 
 @cli.command()
@@ -108,7 +106,7 @@ def generate_integration(outputdir: str):
     """
     Generate ".env.inte" file.
     """
-    return _generate_dot_env_file(outputdir, ".env.inte", _INTE_VALUES)
+    _generate_dot_env_file(outputdir, ".env.inte", _INTE_VALUES)
 
 
 if __name__ == "__main__":
