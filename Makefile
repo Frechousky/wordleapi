@@ -7,6 +7,9 @@ test:
 test-unit:
 	pipenv run pytest tests/unit
 
+test-inte:
+	pipenv run pytest tests/inte
+
 install-deps:
 	pipenv sync
 
@@ -19,7 +22,10 @@ update-deps:
 lint:
 	pipenv run ruff check .
 
+lint-fix:
+	pipenv run ruff check . --fix
+
 format:
 	pipenv run ruff format .
 
-.PHONY: run test test-unit install-deps install-all-deps update-deps lint format
+.PHONY: run test test-unit test-inte install-deps install-all-deps update-deps lint lint-fix format
