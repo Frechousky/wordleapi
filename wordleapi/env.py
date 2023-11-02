@@ -49,7 +49,7 @@ _DEFAULT_VALUES = {
     DotEnvKey.DATABASE_URI.value: "dialect+driver://username:password@host:port/database",
     DotEnvKey.WORDLEFILE_6_LETTERS.value: "/path/to/wordlefile",
     DotEnvKey.WORDLEFILE_7_LETTERS.value: "/path/to/wordlefile",
-    # DotEnvKey.WORDLEFILE_8_LETTERS.value: "/path/to/wordlefile",
+    DotEnvKey.WORDLEFILE_8_LETTERS.value: "/path/to/wordlefile",
 }
 
 
