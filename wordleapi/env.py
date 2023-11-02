@@ -25,27 +25,6 @@ class DotEnvKey(enum.Enum):
     WORDLEFILE_8_LETTERS = "WORDLEFILE_8_LETTERS"
 
 
-_DEFAULT_VALUES = {
-    DotEnvKey.DATABASE_URI.value: "dialect+driver://username:password@host:port/database",
-    DotEnvKey.WORDLEFILE_6_LETTERS.value: "/path/to/wordlefile",
-    DotEnvKey.WORDLEFILE_7_LETTERS.value: "/path/to/wordlefile",
-    DotEnvKey.WORDLEFILE_8_LETTERS.value: "/path/to/wordlefile",
-}
-
-
-@click.command()
-@click.option(
-    "--outputdir", "-o", default=".", help="Output directory to generate .env file"
-)
-def _generate_default_dot_env(outputdir: str):
-    """
-    Generate ".env.default" file with default values.
-    """
-    with open(os.path.join(outputdir, ".env.default"), "w") as f:
-        for k in _DEFAULT_VALUES.keys():
-            f.write(f"{k}={_DEFAULT_VALUES.get(k)}\n")
-
-
 def check_dot_env() -> None:
     """
     Check that all .env keys were read from .env files.
@@ -66,5 +45,71 @@ def check_dot_env() -> None:
         raise MissingDotEnvKeyError(missing_keys)
 
 
+_DEFAULT_VALUES = {
+    DotEnvKey.DATABASE_URI.value: "dialect+driver://username:password@host:port/database",
+    DotEnvKey.WORDLEFILE_6_LETTERS.value: "/path/to/wordlefile",
+    DotEnvKey.WORDLEFILE_7_LETTERS.value: "/path/to/wordlefile",
+    DotEnvKey.WORDLEFILE_8_LETTERS.value: "/path/to/wordlefile",
+}
+
+
+_INTE_VALUES = {
+    DotEnvKey.DATABASE_URI.value: "sqlite:///wordleapi.db",
+    DotEnvKey.WORDLEFILE_6_LETTERS.value: "wordlefiles/wordle_6_fr.txt",
+    DotEnvKey.WORDLEFILE_7_LETTERS.value: "wordlefiles/wordle_7_fr.txt",
+    DotEnvKey.WORDLEFILE_8_LETTERS.value: "wordlefiles/wordle_8_fr.txt",
+}
+
+
+def _generate_dot_env_file(outputdir: str, filename: str, kv: dict):
+    """
+    Generate .env file
+
+    Args:
+        outputdir: output dir to generate file
+        filename: name of file to generate
+        kv: key value pairs
+
+    Returns: -1 on failure, 0 on success
+    """
+    if [key.name for key in DotEnvKey] != [key for key in kv.keys()]:
+        loguru.logger.error("invalid dot env keys")
+        return -1
+    with open(os.path.join(outputdir, filename), "w") as f:
+        for key in kv:
+            f.write(f"{key}={kv.get(key)}\n")
+    return 0
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.option(
+    "--outputdir",
+    "-o",
+    default=".",
+    help="Output directory to generate .env.default file",
+)
+def generate_default(outputdir: str):
+    """
+    Generate ".env.default" file with default values.
+    """
+    _generate_dot_env_file(outputdir, ".env.default", _DEFAULT_VALUES)
+
+
+@cli.command()
+@click.option(
+    "--outputdir", "-o", default=".", help="Output directory to generate .env.inte file"
+)
+def generate_integration(outputdir: str):
+    """
+    Generate ".env.inte" file.
+    """
+    _generate_dot_env_file(outputdir, ".env.inte", _INTE_VALUES)
+
+
 if __name__ == "__main__":
-    _generate_default_dot_env()
+    cli()

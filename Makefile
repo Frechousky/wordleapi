@@ -28,4 +28,12 @@ lint-fix:
 format:
 	pipenv run ruff format .
 
-.PHONY: run test test-unit test-inte install-deps install-all-deps update-deps lint lint-fix format
+dotenv-default:
+	pipenv run wordleapi/env.py generate-default
+
+dotenv-inte:
+	pipenv run wordleapi/env.py generate-integration
+
+dotenv: dotenv-default dotenv-inte
+
+.PHONY: run test test-unit test-inte install-deps install-all-deps update-deps lint lint-fix format dotenv-default dotenv-inte dotenv
