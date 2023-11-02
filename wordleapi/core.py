@@ -13,6 +13,10 @@ from wordleapi.db.model import (
 from wordleapi.utils import now_yyyymmdd, pick_random_element
 
 
+# Available/playable word length
+AVAILABLE_WORD_LENGTHS = [6, 7, 8]
+
+
 class GuessIsEmptyError(Exception):
     pass
 

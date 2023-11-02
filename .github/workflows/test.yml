@@ -1,4 +1,4 @@
-name: Unit test
+name: Unit and integration tests
 
 on: [push]
 
@@ -20,5 +20,6 @@ jobs:
           pip install pipenv
           make install-all-deps
       - name: Run unit tests
-        run: |
-          make test-unit
+        run: make test-unit
+      - name: Run integration tests
+        run: make test-inte
