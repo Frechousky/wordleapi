@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import enum
 import os
-import sys
 
 import click
 import loguru
