@@ -73,7 +73,7 @@ def _generate_dot_env_file(outputdir: str, filename: str, kv: dict):
     Returns: -1 on failure, 0 on success
     """
     if [key.name for key in DotEnvKey] != [key for key in kv.keys()]:
-        loguru.logger.error("invalid dot env keys")
+        loguru.logger.error("invalid or missing dot env keys")
         return -1
     with open(os.path.join(outputdir, filename), "w") as f:
         for key in kv:
