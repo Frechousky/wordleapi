@@ -23,10 +23,10 @@ from wordleapi.utils import strip_lower
 
 
 class ErrorCode(enum.Enum):
-    HPG_INVALID_GUESS_LENGTH = 100
-    HPG_EMPTY_GUESS = 101
-    HPG_INVALID_FORMAT = 102
-    HPG_GUESS_NOT_IN_WHITELIST = 103
+    INVALID_GUESS_LENGTH = 100
+    EMPTY_GUESS = 101
+    INVALID_FORMAT = 102
+    GUESS_NOT_IN_WHITELIST = 103
 
 
 def build_error_response(code: ErrorCode, error_msg: str) -> dict:
@@ -41,7 +41,7 @@ def handle_player_guess(whitelist: tuple[str]):
     except InvalidGuessLengthError as e:
         return (
             build_error_response(
-                ErrorCode.HPG_INVALID_GUESS_LENGTH,
+                ErrorCode.INVALID_GUESS_LENGTH,
                 f"'{guess}' is not {e.expected_length()} letters long",
             ),
             422,
@@ -49,7 +49,7 @@ def handle_player_guess(whitelist: tuple[str]):
     except GuessIsEmptyError:
         return (
             build_error_response(
-                ErrorCode.HPG_EMPTY_GUESS,
+                ErrorCode.EMPTY_GUESS,
                 "no guess value submitted",
             ),
             422,
@@ -57,7 +57,7 @@ def handle_player_guess(whitelist: tuple[str]):
     except GuessInvalidFormatError:
         return (
             build_error_response(
-                ErrorCode.HPG_INVALID_FORMAT,
+                ErrorCode.INVALID_FORMAT,
                 f"'{guess}' format is invalid (should match regex {GUESS_REGEX})",
             ),
             422,
@@ -65,7 +65,7 @@ def handle_player_guess(whitelist: tuple[str]):
     except GuessNotInWhitelistError:
         return (
             build_error_response(
-                ErrorCode.HPG_GUESS_NOT_IN_WHITELIST,
+                ErrorCode.GUESS_NOT_IN_WHITELIST,
                 f"'{guess}' is not in whitelist",
             ),
             422,
