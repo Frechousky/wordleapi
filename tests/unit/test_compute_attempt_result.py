@@ -1,18 +1,18 @@
 import pytest
 
 from wordleapi.core import (
-    compute_guess_result,
+    compute_attempt_result,
     LetterPositionStatus as LPS,
 )
 
 
-@pytest.mark.parametrize("guess,answer", [("abcdef", "abcdef"), ("zyxwvu", "zyxwvu")])
-def test_compute_guess_result__valid_guess(guess: str, answer: str):
-    assert compute_guess_result(guess, answer) == []
+@pytest.mark.parametrize("attempt,answer", [("abcdef", "abcdef"), ("zyxwvu", "zyxwvu")])
+def test_compute_attempt_result__valid_attempt(attempt: str, answer: str):
+    assert compute_attempt_result(attempt, answer) == []
 
 
 @pytest.mark.parametrize(
-    "guess,answer,expected_result",
+    "attempt,answer,expected_result",
     [
         # only not present letters
         ("abcdef", "zyxwvu", [LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
@@ -51,9 +51,9 @@ def test_compute_guess_result__valid_guess(guess: str, answer: str):
         ("itsame", "maario", [LPS.BP, LPS.NP, LPS.NP, LPS.BP, LPS.BP, LPS.NP]),
     ],
 )
-def test_compute_guess_result__invalid_guess(
-    guess: str, answer: str, expected_result: tuple[LPS]
+def test_compute_attempt_result__invalid_attempt(
+    attempt: str, answer: str, expected_result: tuple[LPS]
 ):
     assert (
-        compute_guess_result(guess, answer) == expected_result
-    ), f'guess: "{guess}", answer: "{answer}"'
+        compute_attempt_result(attempt, answer) == expected_result
+    ), f'attempt: "{attempt}", answer: "{answer}"'

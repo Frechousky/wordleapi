@@ -17,11 +17,11 @@ from wordleapi.utils import now_yyyymmdd, pick_random_element
 AVAILABLE_WORD_LENGTHS = [6, 7, 8]
 
 
-class GuessIsEmptyError(Exception):
+class AttemptIsEmptyError(Exception):
     pass
 
 
-class InvalidGuessLengthError(Exception):
+class InvalidAttemptLengthError(Exception):
     def __init__(self, expected_length: int, *args: object) -> None:
         super().__init__(*args)
         self.__expected_length = expected_length
@@ -30,11 +30,11 @@ class InvalidGuessLengthError(Exception):
         return self.__expected_length
 
 
-class GuessNotInWhitelistError(Exception):
+class AttemptNotInWhitelistError(Exception):
     pass
 
 
-class GuessInvalidFormatError(Exception):
+class AttemptInvalidFormatError(Exception):
     pass
 
 
@@ -44,81 +44,81 @@ class LetterPositionStatus(enum.IntEnum):
     NP = 2  # not present
 
 
-GUESS_REGEX = "[a-zA-Z]+"
-GUESS_PATTERN = re.compile(GUESS_REGEX)
+ATTEMPT_REGEX = "[a-zA-Z]+"
+ATTEMPT_PATTERN = re.compile(ATTEMPT_REGEX)
 
 
-def validate_guess(guess: str, whitelist: tuple[str]) -> bool:
+def validate_attempt(attempt: str, whitelist: tuple[str]) -> bool:
     """
-    Validate user guess input.
-    Raises exception if guess is invalid, returns True otherwise.
+    Validate user attempt input.
+    Raises exception if attempt is invalid, returns True otherwise.
 
     Args:
-        guess: Store the user's guess
-        whitelist: Check if the guess is in the whitelist
+        attempt: Store the user's attempt
+        whitelist: Check if the attempt is in the whitelist
 
     Returns:
-        True if the guess is valid
+        True if the attempt is valid
 
     Raises:
-        GuessIsEmptyError: if guess is None or ""
-        InvalidGuessLengthError: if guess length is not equal to word length
-        GuessInvalidFormatError: if guess is not only characters (lower/upper case)
-        GuessNotInWhitelistError: if guess is not a whitelisted word
+        AttemptIsEmptyError: if attempt is None or ""
+        InvalidAttemptLengthError: if attempt length is not equal to word length
+        AttemptInvalidFormatError: if attempt is not only characters (lower/upper case)
+        AttemptNotInWhitelistError: if attempt is not a whitelisted word
     """
     assert whitelist
 
-    loguru.logger.debug("(guess: '{}')", guess)
+    loguru.logger.debug("(attempt: '{}')", attempt)
 
-    if not guess:
-        loguru.logger.debug("(guess: '{}') => GuessIsEmptyError", guess)
-        raise GuessIsEmptyError()
-    if len(guess) != len(whitelist[0]):
-        loguru.logger.debug("(guess: '{}') => InvalidGuessLengthError", guess)
-        raise InvalidGuessLengthError(len(whitelist[0]))
-    if GUESS_PATTERN.fullmatch(guess) is None:
-        loguru.logger.debug("(guess: '{}') => GuessInvalidFormatError", guess)
-        raise GuessInvalidFormatError()
-    if guess not in whitelist:
-        loguru.logger.debug("(guess: '{}') => GuessNotInWhitelistError", guess)
-        raise GuessNotInWhitelistError()
+    if not attempt:
+        loguru.logger.debug("(attempt: '{}') => AttemptIsEmptyError", attempt)
+        raise AttemptIsEmptyError()
+    if len(attempt) != len(whitelist[0]):
+        loguru.logger.debug("(attempt: '{}') => InvalidAttemptLengthError", attempt)
+        raise InvalidAttemptLengthError(len(whitelist[0]))
+    if ATTEMPT_PATTERN.fullmatch(attempt) is None:
+        loguru.logger.debug("(attempt: '{}') => AttemptInvalidFormatError", attempt)
+        raise AttemptInvalidFormatError()
+    if attempt not in whitelist:
+        loguru.logger.debug("(attempt: '{}') => AttemptNotInWhitelistError", attempt)
+        raise AttemptNotInWhitelistError()
 
-    loguru.logger.debug("(guess: '{}') => True", guess)
+    loguru.logger.debug("(attempt: '{}') => True", attempt)
     return True
 
 
-def compute_guess_result(guess: str, word: str) -> list[LetterPositionStatus]:
+def compute_attempt_result(attempt: str, word: str) -> list[LetterPositionStatus]:
     """
-    Check if player guess is correct.
+    Check if player attempt is correct.
 
     Args:
-        guess: player guess
+        attempt: player attempt
         word: word to find
 
     Returns:
-        [] if guess is correct
-        List of position status (either not present, bad position or good position) for each letter in guess
+        [] if attempt is correct
+        List of position status (either not present, bad position or good position) for each letter in attempt
     """
-    assert guess
+    assert attempt
     assert word
 
-    # guess is correct
-    if guess == word:
+    # attempt is correct
+    if attempt == word:
         loguru.logger.debug(
-            "(guess: '{}', word: '{}') => [] (correct guess)", guess, word
+            "(attempt: '{}', word: '{}') => [] (correct attempt)", attempt, word
         )
         return []
 
     # look for good positioned letters
     available_word_letters = [letter for letter in word]
-    result = len(guess) * [LetterPositionStatus.NP]
-    for idx, v in enumerate(guess):
+    result = len(attempt) * [LetterPositionStatus.NP]
+    for idx, v in enumerate(attempt):
         if word[idx] == v:
             result[idx] = LetterPositionStatus.GP
             available_word_letters[idx] = None
 
     # look for bad positioned letters
-    for idx, v in enumerate(guess):
+    for idx, v in enumerate(attempt):
         if result[idx] == LetterPositionStatus.GP:
             continue
         try:
@@ -129,8 +129,8 @@ def compute_guess_result(guess: str, word: str) -> list[LetterPositionStatus]:
             pass
 
     loguru.logger.debug(
-        "(guess: '{}', word: '{}') => {} (incorrect guess)",
-        guess,
+        "(attempt: '{}', word: '{}') => {} (incorrect attempt)",
+        attempt,
         word,
         [lps.value for lps in result],
     )
@@ -159,7 +159,7 @@ def load_wordlefile(filename: str) -> tuple[str]:
 
 def get_today_word(whitelist: tuple[str]) -> str:
     """
-    Get today word to guess by retrieving it from database or picking a random non-played word.
+    Get today word to attempt by retrieving it from database or picking a random non-played word.
 
     Played word are stored in database.
     If today word is in database returns it, otherwise pick a random word from whitelist which is not in played word

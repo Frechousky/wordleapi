@@ -7,15 +7,15 @@ import flask_cors
 import loguru
 
 from wordleapi.core import (
-    GUESS_REGEX,
-    GuessInvalidFormatError,
-    GuessIsEmptyError,
-    GuessNotInWhitelistError,
-    InvalidGuessLengthError,
-    compute_guess_result,
+    ATTEMPT_REGEX,
+    AttemptInvalidFormatError,
+    AttemptIsEmptyError,
+    AttemptNotInWhitelistError,
+    InvalidAttemptLengthError,
+    compute_attempt_result,
     get_today_word,
     load_wordlefile,
-    validate_guess,
+    validate_attempt,
 )
 from wordleapi.db.model import db
 from wordleapi.env import DotEnvKey, check_dot_env
@@ -23,60 +23,60 @@ from wordleapi.utils import strip_lower
 
 
 class ErrorCode(enum.Enum):
-    INVALID_GUESS_LENGTH = 100
-    EMPTY_GUESS = 101
+    INVALID_ATTEMPT_LENGTH = 100
+    EMPTY_ATTEMPT = 101
     INVALID_FORMAT = 102
-    GUESS_NOT_IN_WHITELIST = 103
+    ATTEMPT_NOT_IN_WHITELIST = 103
 
 
 def build_error_response(code: ErrorCode, error_msg: str) -> dict:
     return {"code": code.value, "error_msg": error_msg}
 
 
-def handle_player_guess(whitelist: tuple[str]):
-    guess = strip_lower(flask.request.form.get("guess", None))
-    loguru.logger.debug("(guess: '{}')", guess)
+def handle_player_attempt(whitelist: tuple[str]):
+    attempt = strip_lower(flask.request.form.get("attempt", None))
+    loguru.logger.debug("(attempt: '{}')", attempt)
     try:
-        validate_guess(guess, whitelist)
-    except InvalidGuessLengthError as e:
+        validate_attempt(attempt, whitelist)
+    except InvalidAttemptLengthError as e:
         return (
             build_error_response(
-                ErrorCode.INVALID_GUESS_LENGTH,
-                f"'{guess}' is not {e.expected_length()} letters long",
+                ErrorCode.INVALID_ATTEMPT_LENGTH,
+                f"'{attempt}' is not {e.expected_length()} letters long",
             ),
             422,
         )
-    except GuessIsEmptyError:
+    except AttemptIsEmptyError:
         return (
             build_error_response(
-                ErrorCode.EMPTY_GUESS,
-                "no guess value submitted",
+                ErrorCode.EMPTY_ATTEMPT,
+                "no attempt value submitted",
             ),
             422,
         )
-    except GuessInvalidFormatError:
+    except AttemptInvalidFormatError:
         return (
             build_error_response(
                 ErrorCode.INVALID_FORMAT,
-                f"'{guess}' format is invalid (should match regex {GUESS_REGEX})",
+                f"'{attempt}' format is invalid (should match regex {ATTEMPT_REGEX})",
             ),
             422,
         )
-    except GuessNotInWhitelistError:
+    except AttemptNotInWhitelistError:
         return (
             build_error_response(
-                ErrorCode.GUESS_NOT_IN_WHITELIST,
-                f"'{guess}' is not in whitelist",
+                ErrorCode.ATTEMPT_NOT_IN_WHITELIST,
+                f"'{attempt}' is not in whitelist",
             ),
             422,
         )
     word = get_today_word(whitelist)
-    guess_result = compute_guess_result(guess, word)
+    attempt_result = compute_attempt_result(attempt, word)
 
-    if not guess_result:
+    if not attempt_result:
         return {"success": True}
 
-    return {"success": False, "result": guess_result}
+    return {"success": False, "result": attempt_result}
 
 
 def create_app() -> flask.Flask:
@@ -116,17 +116,17 @@ def create_app() -> flask.Flask:
 
     loguru.logger.info("Init API routes")
 
-    @app.route("/word/6/guess", methods=["POST"])
-    def handle_player_guess_six_letters():
-        return handle_player_guess(whitelist_6_letters)
+    @app.route("/word/6/attempt", methods=["POST"])
+    def handle_player_attempt_six_letters():
+        return handle_player_attempt(whitelist_6_letters)
 
-    @app.route("/word/7/guess", methods=["POST"])
-    def handle_player_guess_seven_letters():
-        return handle_player_guess(whitelist_7_letters)
+    @app.route("/word/7/attempt", methods=["POST"])
+    def handle_player_attempt_seven_letters():
+        return handle_player_attempt(whitelist_7_letters)
 
-    @app.route("/word/8/guess", methods=["POST"])
-    def handle_player_guess_eight_letters():
-        return handle_player_guess(whitelist_8_letters)
+    @app.route("/word/8/attempt", methods=["POST"])
+    def handle_player_attempt_eight_letters():
+        return handle_player_attempt(whitelist_8_letters)
 
     loguru.logger.info("App init is successful")
     return app
