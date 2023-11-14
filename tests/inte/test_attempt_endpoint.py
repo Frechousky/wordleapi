@@ -96,7 +96,9 @@ def test__when_attempt_is_correct__returns_http_200(
         )
     assert attempt == today_word
 
-    resp = test_client.post(path=f"/word/{word_length}/attempt", data={"attempt": attempt})
+    resp = test_client.post(
+        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+    )
     resp_json_data = json.loads(resp.data)
 
     assert resp.status_code == 200
@@ -110,7 +112,9 @@ def test__when_word_length_is_invalid__returns_http_422(
     attempt = "azert"
     assert len(attempt) != word_length
 
-    resp = test_client.post(path=f"/word/{word_length}/attempt", data={"attempt": attempt})
+    resp = test_client.post(
+        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+    )
     resp_json_data = json.loads(resp.data)
 
     assert resp.status_code == 422
@@ -127,7 +131,9 @@ def test__when_attempt_is_empty__returns_http_422(
     attempt = ""
     assert len(attempt) == 0
 
-    resp = test_client.post(path=f"/word/{word_length}/attempt", data={"attempt": attempt})
+    resp = test_client.post(
+        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+    )
     resp_json_data = json.loads(resp.data)
 
     assert resp.status_code == 422
@@ -151,7 +157,9 @@ def test__when_attempt_is_empty__returns_http_422(
 def test__when_attempt_format_is_invalid__returns_http_422(
     test_client: FlaskClient, word_length: int, attempt: str
 ):
-    resp = test_client.post(path=f"/word/{word_length}/attempt", data={"attempt": attempt})
+    resp = test_client.post(
+        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+    )
     resp_json_data = json.loads(resp.data)
 
     assert resp.status_code == 422
@@ -172,7 +180,9 @@ def test__when_attempt_format_is_invalid__returns_http_422(
 def test__when_attempt_not_in_whitelist__returns_http_422(
     test_client: FlaskClient, word_length: int, attempt: str
 ):
-    resp = test_client.post(path=f"/word/{word_length}/attempt", data={"attempt": attempt})
+    resp = test_client.post(
+        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+    )
     resp_json_data = json.loads(resp.data)
 
     assert resp.status_code == 422
