@@ -25,8 +25,10 @@ from wordleapi.utils import strip_lower
 class ErrorCode(enum.Enum):
     INVALID_ATTEMPT_LENGTH = 100
     EMPTY_ATTEMPT = 101
-    INVALID_FORMAT = 102
+    INVALID_ATTEMPT_FORMAT = 102
     ATTEMPT_NOT_IN_WHITELIST = 103
+    EMPTY_PAYLOAD = 104
+    INVALID_CONTENT_TYPE = 105
 
 
 def build_error_response(code: ErrorCode, error_msg: str) -> dict:
@@ -34,8 +36,21 @@ def build_error_response(code: ErrorCode, error_msg: str) -> dict:
 
 
 def handle_player_attempt(whitelist: tuple[str]):
-    attempt = strip_lower(flask.request.form.get("attempt", None))
-    loguru.logger.debug("(attempt: '{}')", attempt)
+    if not flask.request.is_json:
+        return build_error_response(
+            ErrorCode.INVALID_CONTENT_TYPE,
+            "no JSON payload, make sure to send JSON data with Content-Type=application/json header",
+        ), 415
+
+    payload = flask.request.get_json(silent=True)
+    loguru.logger.debug("(payload: '{}')", payload)
+    if not payload:
+        return build_error_response(
+            ErrorCode.EMPTY_PAYLOAD,
+            "no JSON payload, make sure to send JSON data with Content-Type=application/json header",
+        ), 400
+
+    attempt = strip_lower(payload.get("attempt"))
     try:
         validate_attempt(attempt, whitelist)
     except InvalidAttemptLengthError as e:
@@ -57,7 +72,7 @@ def handle_player_attempt(whitelist: tuple[str]):
     except AttemptInvalidFormatError:
         return (
             build_error_response(
-                ErrorCode.INVALID_FORMAT,
+                ErrorCode.INVALID_ATTEMPT_FORMAT,
                 f"'{attempt}' format is invalid (should match regex {ATTEMPT_REGEX})",
             ),
             422,

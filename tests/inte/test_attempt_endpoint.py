@@ -97,7 +97,7 @@ def test__when_attempt_is_correct__returns_http_200(
     assert attempt == today_word
 
     resp = test_client.post(
-        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+        path=f"/word/{word_length}/attempt", json={"attempt": attempt}
     )
     resp_json_data = json.loads(resp.data)
 
@@ -113,7 +113,7 @@ def test__when_word_length_is_invalid__returns_http_422(
     assert len(attempt) != word_length
 
     resp = test_client.post(
-        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+        path=f"/word/{word_length}/attempt", json={"attempt": attempt}
     )
     resp_json_data = json.loads(resp.data)
 
@@ -125,6 +125,43 @@ def test__when_word_length_is_invalid__returns_http_422(
 
 
 @pytest.mark.parametrize("word_length", AVAILABLE_WORD_LENGTHS)
+def test__when_content_type_header_is_invalid__returns_http_415(
+    test_client: FlaskClient, word_length: int
+):
+    attempt = ""
+    assert len(attempt) == 0
+
+    resp = test_client.post(path=f"/word/{word_length}/attempt")
+    resp_json_data = json.loads(resp.data)
+
+    assert resp.status_code == 415
+    assert resp_json_data == {
+        "code": ErrorCode.INVALID_CONTENT_TYPE.value,
+        "error_msg": "no JSON payload, make sure to send JSON data with Content-Type=application/json header",
+    }
+
+
+@pytest.mark.parametrize("word_length", AVAILABLE_WORD_LENGTHS)
+def test__when_json_payload_is_empty__returns_http_400(
+    test_client: FlaskClient, word_length: int
+):
+    attempt = ""
+    assert len(attempt) == 0
+
+    resp = test_client.post(
+        path=f"/word/{word_length}/attempt",
+        headers={"Content-Type": "application/json"},
+    )
+    resp_json_data = json.loads(resp.data)
+
+    assert resp.status_code == 400
+    assert resp_json_data == {
+        "code": ErrorCode.EMPTY_PAYLOAD.value,
+        "error_msg": "no JSON payload, make sure to send JSON data with Content-Type=application/json header",
+    }
+
+
+@pytest.mark.parametrize("word_length", AVAILABLE_WORD_LENGTHS)
 def test__when_attempt_is_empty__returns_http_422(
     test_client: FlaskClient, word_length: int
 ):
@@ -132,7 +169,7 @@ def test__when_attempt_is_empty__returns_http_422(
     assert len(attempt) == 0
 
     resp = test_client.post(
-        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+        path=f"/word/{word_length}/attempt", json={"attempt": attempt}
     )
     resp_json_data = json.loads(resp.data)
 
@@ -158,13 +195,13 @@ def test__when_attempt_format_is_invalid__returns_http_422(
     test_client: FlaskClient, word_length: int, attempt: str
 ):
     resp = test_client.post(
-        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+        path=f"/word/{word_length}/attempt", json={"attempt": attempt}
     )
     resp_json_data = json.loads(resp.data)
 
     assert resp.status_code == 422
     assert resp_json_data == {
-        "code": ErrorCode.INVALID_FORMAT.value,
+        "code": ErrorCode.INVALID_ATTEMPT_FORMAT.value,
         "error_msg": f"'{attempt}' format is invalid (should match regex {ATTEMPT_REGEX})",
     }
 
@@ -181,7 +218,7 @@ def test__when_attempt_not_in_whitelist__returns_http_422(
     test_client: FlaskClient, word_length: int, attempt: str
 ):
     resp = test_client.post(
-        path=f"/word/{word_length}/attempt", data={"attempt": attempt}
+        path=f"/word/{word_length}/attempt", json={"attempt": attempt}
     )
     resp_json_data = json.loads(resp.data)
 
