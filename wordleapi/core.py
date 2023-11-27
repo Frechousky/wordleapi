@@ -159,7 +159,7 @@ def load_wordlefile(filename: str) -> tuple[str]:
 
 def get_today_word(whitelist: tuple[str]) -> str:
     """
-    Get today word to attempt by retrieving it from database or picking a random non-played word.
+    Get today word to guess by retrieving it from database or picking a random non-played word.
 
     Played word are stored in database.
     If today word is in database returns it, otherwise pick a random word from whitelist which is not in played word
@@ -170,7 +170,7 @@ def get_today_word(whitelist: tuple[str]) -> str:
         whitelist: list of available words
 
     Returns:
-        Today word
+        Today word to guess
     """
     assert whitelist
 
