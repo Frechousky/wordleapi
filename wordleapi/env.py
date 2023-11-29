@@ -20,9 +20,9 @@ class MissingDotEnvKeyError(Exception):
 
 class DotEnvKey(enum.Enum):
     DATABASE_URI = "DATABASE_URI"
-    WORDLEFILE_6_LETTERS = "WORDLEFILE_6_LETTERS"
-    WORDLEFILE_7_LETTERS = "WORDLEFILE_7_LETTERS"
-    WORDLEFILE_8_LETTERS = "WORDLEFILE_8_LETTERS"
+    WHITELIST_FILE_6_LETTERS = "WHITELIST_FILE_6_LETTERS"
+    WHITELIST_FILE_7_LETTERS = "WHITELIST_FILE_7_LETTERS"
+    WHITELIST_FILE_8_LETTERS = "WHITELIST_FILE_8_LETTERS"
 
 
 def check_dot_env() -> None:
@@ -47,17 +47,17 @@ def check_dot_env() -> None:
 
 _DEFAULT_VALUES = {
     DotEnvKey.DATABASE_URI.value: "dialect+driver://username:password@host:port/database",
-    DotEnvKey.WORDLEFILE_6_LETTERS.value: "/path/to/wordlefile",
-    DotEnvKey.WORDLEFILE_7_LETTERS.value: "/path/to/wordlefile",
-    DotEnvKey.WORDLEFILE_8_LETTERS.value: "/path/to/wordlefile",
+    DotEnvKey.WHITELIST_FILE_6_LETTERS.value: "/path/to/whitelist_file",
+    DotEnvKey.WHITELIST_FILE_7_LETTERS.value: "/path/to/whitelist_file",
+    DotEnvKey.WHITELIST_FILE_8_LETTERS.value: "/path/to/whitelist_file",
 }
 
 
 _INTE_VALUES = {
     DotEnvKey.DATABASE_URI.value: "sqlite:///wordleapi.db",
-    DotEnvKey.WORDLEFILE_6_LETTERS.value: "wordlefiles/wordle_6_fr.txt",
-    DotEnvKey.WORDLEFILE_7_LETTERS.value: "wordlefiles/wordle_7_fr.txt",
-    DotEnvKey.WORDLEFILE_8_LETTERS.value: "wordlefiles/wordle_8_fr.txt",
+    DotEnvKey.WHITELIST_FILE_6_LETTERS.value: "whitelist_files/whitelist_6_fr.txt",
+    DotEnvKey.WHITELIST_FILE_7_LETTERS.value: "whitelist_files/whitelist_7_fr.txt",
+    DotEnvKey.WHITELIST_FILE_8_LETTERS.value: "whitelist_files/whitelist_8_fr.txt",
 }
 
 

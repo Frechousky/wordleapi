@@ -9,7 +9,7 @@ from flask.testing import FlaskClient
 from wordleapi.api import create_app, ErrorCode
 from wordleapi.core import (
     AVAILABLE_WORD_LENGTHS,
-    load_wordlefile,
+    load_whitelist_file,
     ATTEMPT_REGEX,
 )
 from wordleapi.db.model import db, add_played_word, commit
@@ -17,21 +17,21 @@ from wordleapi.env import DotEnvKey
 
 
 @pytest.fixture()
-def whitelist_6() -> list[str]:
-    assert os.getenv(DotEnvKey.WORDLEFILE_6_LETTERS.value)
-    return load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_6_LETTERS.value))
+def whitelist_6() -> tuple[str]:
+    assert os.getenv(DotEnvKey.WHITELIST_FILE_6_LETTERS.value)
+    return load_whitelist_file(os.getenv(DotEnvKey.WHITELIST_FILE_6_LETTERS.value))
 
 
 @pytest.fixture()
-def whitelist_7() -> list[str]:
-    assert os.getenv(DotEnvKey.WORDLEFILE_7_LETTERS.value)
-    return load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_7_LETTERS.value))
+def whitelist_7() -> tuple[str]:
+    assert os.getenv(DotEnvKey.WHITELIST_FILE_7_LETTERS.value)
+    return load_whitelist_file(os.getenv(DotEnvKey.WHITELIST_FILE_7_LETTERS.value))
 
 
 @pytest.fixture()
-def whitelist_8() -> list[str]:
-    assert os.getenv(DotEnvKey.WORDLEFILE_8_LETTERS.value)
-    return load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_8_LETTERS.value))
+def whitelist_8() -> tuple[str]:
+    assert os.getenv(DotEnvKey.WHITELIST_FILE_8_LETTERS.value)
+    return load_whitelist_file(os.getenv(DotEnvKey.WHITELIST_FILE_8_LETTERS.value))
 
 
 @pytest.fixture()

@@ -12,7 +12,7 @@ from wordleapi.core import (
     ATTEMPT_REGEX,
     compute_attempt_result,
     get_today_word,
-    load_wordlefile,
+    load_whitelist_file,
     AVAILABLE_WORD_LENGTHS,
     LetterPositionStatus as LPS,
 )
@@ -176,15 +176,15 @@ def create_app() -> flask_openapi3.OpenAPI:
     with app.app_context():
         db.create_all()
 
-    # WORDLE FILES loading (contains playable words)
+    # WHITELIST FILES loading (contains playable words)
     whitelists_by_word_length = {
-        6: load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_6_LETTERS.value)),
-        7: load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_7_LETTERS.value)),
-        8: load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_8_LETTERS.value)),
+        6: load_whitelist_file(os.getenv(DotEnvKey.WHITELIST_FILE_6_LETTERS.value)),
+        7: load_whitelist_file(os.getenv(DotEnvKey.WHITELIST_FILE_7_LETTERS.value)),
+        8: load_whitelist_file(os.getenv(DotEnvKey.WHITELIST_FILE_8_LETTERS.value)),
     }
     if list(whitelists_by_word_length.keys()) != AVAILABLE_WORD_LENGTHS:
         loguru.logger.error(
-            "Invalid whitelist by word length dict, make sure there is one wordle file for each available word length"
+            "Invalid whitelist by word length dict, make sure there is one whitelist file for each available word length"
         )
         return None
 

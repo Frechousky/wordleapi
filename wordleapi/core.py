@@ -81,9 +81,9 @@ def compute_attempt_result(attempt: str, word: str) -> list[LetterPositionStatus
     return result
 
 
-def load_wordlefile(filename: str) -> tuple[str]:
+def load_whitelist_file(filename: str) -> tuple[str]:
     """
-    Load wordlefile and extract list of words from it.
+    Load whitelist_file and extract list of words from it.
 
     Args:
         filename: file to read
@@ -94,7 +94,7 @@ def load_wordlefile(filename: str) -> tuple[str]:
     Raises:
         OSError: if file opening fails
     """
-    loguru.logger.info("Load wordlefile '{}'", filename)
+    loguru.logger.info("Load whitelist_file '{}'", filename)
     with open(filename) as f:
         whitelist = tuple([word for word in f.read().split("\n") if word != ""])
         loguru.logger.info("Found {} words in '{}'", len(whitelist), filename)

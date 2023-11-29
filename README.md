@@ -56,7 +56,7 @@ Why is result [0, 0, 2, 1, 1, 2] ?
 
 #### 4 - Invalid attempt request/response (attempt is not a whitelisted word)
 
-- Some words are whitelisted, only these words may be the word to guess and only there word may be submitted by player (see [wordlefiles folder](wordlefiles))
+- Some words are whitelisted, only these words may be the word to guess and only there word may be submitted by player (see [whitelist_files folder](whitelistfiles))
 - 'ABCDEF' is not a whitelisted word
 - `Request  => { "attempt": "ABCDEF" }`
 - `Response <= { "code": 101, "error_msg": "'ABCDEF' is not in whitelist" }`
