@@ -11,6 +11,7 @@ gunicorn = "*"
 python-dotenv = "*"
 loguru = "*"
 pytz = "*"
+flask-openapi3 = "*"
 
 [dev-packages]
 click = "*"

@@ -8,7 +8,7 @@ from wordleapi.core import (
 
 @pytest.mark.parametrize("attempt,answer", [("abcdef", "abcdef"), ("zyxwvu", "zyxwvu")])
 def test_compute_attempt_result__valid_attempt(attempt: str, answer: str):
-    assert compute_attempt_result(attempt, answer) == []
+    assert compute_attempt_result(attempt, answer) == [LPS.WP] * len(attempt)
 
 
 @pytest.mark.parametrize(
@@ -17,38 +17,38 @@ def test_compute_attempt_result__valid_attempt(attempt: str, answer: str):
         # only not present letters
         ("abcdef", "zyxwvu", [LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
         # 1-5 letter(s) at good position
-        ("abcdef", "azyxwv", [LPS.GP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
-        ("abcdef", "azcxwv", [LPS.GP, LPS.NP, LPS.GP, LPS.NP, LPS.NP, LPS.NP]),
-        ("abcdef", "azcxwf", [LPS.GP, LPS.NP, LPS.GP, LPS.NP, LPS.NP, LPS.GP]),
-        ("abcdef", "abcxwf", [LPS.GP, LPS.GP, LPS.GP, LPS.NP, LPS.NP, LPS.GP]),
-        ("abcdef", "abcxef", [LPS.GP, LPS.GP, LPS.GP, LPS.NP, LPS.GP, LPS.GP]),
+        ("abcdef", "azyxwv", [LPS.WP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("abcdef", "azcxwv", [LPS.WP, LPS.NP, LPS.WP, LPS.NP, LPS.NP, LPS.NP]),
+        ("abcdef", "azcxwf", [LPS.WP, LPS.NP, LPS.WP, LPS.NP, LPS.NP, LPS.WP]),
+        ("abcdef", "abcxwf", [LPS.WP, LPS.WP, LPS.WP, LPS.NP, LPS.NP, LPS.WP]),
+        ("abcdef", "abcxef", [LPS.WP, LPS.WP, LPS.WP, LPS.NP, LPS.WP, LPS.WP]),
         # 1-6 letters at bad position
-        ("abcdef", "zayxwv", [LPS.BP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
-        ("abcdef", "zaxwvc", [LPS.BP, LPS.NP, LPS.BP, LPS.NP, LPS.NP, LPS.NP]),
-        ("abcdef", "faxwvc", [LPS.BP, LPS.NP, LPS.BP, LPS.NP, LPS.NP, LPS.BP]),
-        ("abcdef", "fabwvc", [LPS.BP, LPS.BP, LPS.BP, LPS.NP, LPS.NP, LPS.BP]),
-        ("abcdef", "fabwdc", [LPS.BP, LPS.BP, LPS.BP, LPS.BP, LPS.NP, LPS.BP]),
-        ("abcdef", "fabedc", [LPS.BP, LPS.BP, LPS.BP, LPS.BP, LPS.BP, LPS.BP]),
+        ("abcdef", "zayxwv", [LPS.MP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("abcdef", "zaxwvc", [LPS.MP, LPS.NP, LPS.MP, LPS.NP, LPS.NP, LPS.NP]),
+        ("abcdef", "faxwvc", [LPS.MP, LPS.NP, LPS.MP, LPS.NP, LPS.NP, LPS.MP]),
+        ("abcdef", "fabwvc", [LPS.MP, LPS.MP, LPS.MP, LPS.NP, LPS.NP, LPS.MP]),
+        ("abcdef", "fabwdc", [LPS.MP, LPS.MP, LPS.MP, LPS.MP, LPS.NP, LPS.MP]),
+        ("abcdef", "fabedc", [LPS.MP, LPS.MP, LPS.MP, LPS.MP, LPS.MP, LPS.MP]),
         # good & bad position mix
-        ("abcdef", "afzyxw", [LPS.GP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.BP]),
-        ("abcdef", "abdcef", [LPS.GP, LPS.GP, LPS.BP, LPS.BP, LPS.GP, LPS.GP]),
+        ("abcdef", "afzyxw", [LPS.WP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.MP]),
+        ("abcdef", "abdcef", [LPS.WP, LPS.WP, LPS.MP, LPS.MP, LPS.WP, LPS.WP]),
         # letter present multiple times
-        ("aacdef", "aazyxw", [LPS.GP, LPS.GP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
-        ("aacdef", "azyxwa", [LPS.GP, LPS.BP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
-        ("aacdef", "azyxwv", [LPS.GP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
-        ("abcdef", "aayxwv", [LPS.GP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
-        ("adaeaf", "azyxwv", [LPS.GP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
-        ("abcdef", "ayxawa", [LPS.GP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("aacdef", "aazyxw", [LPS.WP, LPS.WP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("aacdef", "azyxwa", [LPS.WP, LPS.MP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("aacdef", "azyxwv", [LPS.WP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("abcdef", "aayxwv", [LPS.WP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("adaeaf", "azyxwv", [LPS.WP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
+        ("abcdef", "ayxawa", [LPS.WP, LPS.NP, LPS.NP, LPS.NP, LPS.NP, LPS.NP]),
         # anagrams
-        ("tartes", "rattes", [LPS.BP, LPS.GP, LPS.BP, LPS.GP, LPS.GP, LPS.GP]),
-        ("tartes", "restat", [LPS.BP, LPS.BP, LPS.BP, LPS.GP, LPS.BP, LPS.BP]),
-        ("tartes", "sterat", [LPS.BP, LPS.BP, LPS.BP, LPS.BP, LPS.BP, LPS.BP]),
-        ("tartes", "strate", [LPS.BP, LPS.BP, LPS.GP, LPS.BP, LPS.BP, LPS.BP]),
-        ("tartes", "tarets", [LPS.GP, LPS.GP, LPS.GP, LPS.BP, LPS.BP, LPS.GP]),
-        ("tartes", "tersat", [LPS.GP, LPS.BP, LPS.GP, LPS.BP, LPS.BP, LPS.BP]),
-        ("tartes", "tetras", [LPS.GP, LPS.BP, LPS.BP, LPS.BP, LPS.BP, LPS.GP]),
+        ("tartes", "rattes", [LPS.MP, LPS.WP, LPS.MP, LPS.WP, LPS.WP, LPS.WP]),
+        ("tartes", "restat", [LPS.MP, LPS.MP, LPS.MP, LPS.WP, LPS.MP, LPS.MP]),
+        ("tartes", "sterat", [LPS.MP, LPS.MP, LPS.MP, LPS.MP, LPS.MP, LPS.MP]),
+        ("tartes", "strate", [LPS.MP, LPS.MP, LPS.WP, LPS.MP, LPS.MP, LPS.MP]),
+        ("tartes", "tarets", [LPS.WP, LPS.WP, LPS.WP, LPS.MP, LPS.MP, LPS.WP]),
+        ("tartes", "tersat", [LPS.WP, LPS.MP, LPS.WP, LPS.MP, LPS.MP, LPS.MP]),
+        ("tartes", "tetras", [LPS.WP, LPS.MP, LPS.MP, LPS.MP, LPS.MP, LPS.WP]),
         # it's a me
-        ("itsame", "maario", [LPS.BP, LPS.NP, LPS.NP, LPS.BP, LPS.BP, LPS.NP]),
+        ("itsame", "maario", [LPS.MP, LPS.NP, LPS.NP, LPS.MP, LPS.MP, LPS.NP]),
     ],
 )
 def test_compute_attempt_result__invalid_attempt(

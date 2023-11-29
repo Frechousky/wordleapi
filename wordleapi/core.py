@@ -1,5 +1,4 @@
 import enum
-import re
 
 import loguru
 
@@ -17,74 +16,19 @@ from wordleapi.utils import now_yyyymmdd, pick_random_element
 AVAILABLE_WORD_LENGTHS = [6, 7, 8]
 
 
-class AttemptIsEmptyError(Exception):
-    pass
-
-
-class InvalidAttemptLengthError(Exception):
-    def __init__(self, expected_length: int, *args: object) -> None:
-        super().__init__(*args)
-        self.__expected_length = expected_length
-
-    def expected_length(self) -> int:
-        return self.__expected_length
-
-
-class AttemptNotInWhitelistError(Exception):
-    pass
-
-
-class AttemptInvalidFormatError(Exception):
-    pass
-
-
 class LetterPositionStatus(enum.IntEnum):
-    GP = 0  # good position
-    BP = 1  # bad position
+    """
+    0 (well-placed),
+    1 (misplaced),
+    2 (not present)
+    """
+
+    WP = 0  # well-placed
+    MP = 1  # misplaced
     NP = 2  # not present
 
 
-ATTEMPT_REGEX = "[a-zA-Z]+"
-ATTEMPT_PATTERN = re.compile(ATTEMPT_REGEX)
-
-
-def validate_attempt(attempt: str, whitelist: tuple[str]) -> bool:
-    """
-    Validate user attempt input.
-    Raises exception if attempt is invalid, returns True otherwise.
-
-    Args:
-        attempt: Store the user's attempt
-        whitelist: Check if the attempt is in the whitelist
-
-    Returns:
-        True if the attempt is valid
-
-    Raises:
-        AttemptIsEmptyError: if attempt is None or ""
-        InvalidAttemptLengthError: if attempt length is not equal to word length
-        AttemptInvalidFormatError: if attempt is not only characters (lower/upper case)
-        AttemptNotInWhitelistError: if attempt is not a whitelisted word
-    """
-    assert whitelist
-
-    loguru.logger.debug("(attempt: '{}')", attempt)
-
-    if not attempt:
-        loguru.logger.debug("(attempt: '{}') => AttemptIsEmptyError", attempt)
-        raise AttemptIsEmptyError()
-    if len(attempt) != len(whitelist[0]):
-        loguru.logger.debug("(attempt: '{}') => InvalidAttemptLengthError", attempt)
-        raise InvalidAttemptLengthError(len(whitelist[0]))
-    if ATTEMPT_PATTERN.fullmatch(attempt) is None:
-        loguru.logger.debug("(attempt: '{}') => AttemptInvalidFormatError", attempt)
-        raise AttemptInvalidFormatError()
-    if attempt not in whitelist:
-        loguru.logger.debug("(attempt: '{}') => AttemptNotInWhitelistError", attempt)
-        raise AttemptNotInWhitelistError()
-
-    loguru.logger.debug("(attempt: '{}') => True", attempt)
-    return True
+ATTEMPT_REGEX = "^[a-zA-Z]+$"
 
 
 def compute_attempt_result(attempt: str, word: str) -> list[LetterPositionStatus]:
@@ -96,7 +40,6 @@ def compute_attempt_result(attempt: str, word: str) -> list[LetterPositionStatus
         word: word to find
 
     Returns:
-        [] if attempt is correct
         List of position status (either not present, bad position or good position) for each letter in attempt
     """
     assert attempt
@@ -104,26 +47,27 @@ def compute_attempt_result(attempt: str, word: str) -> list[LetterPositionStatus
 
     # attempt is correct
     if attempt == word:
+        result = [LetterPositionStatus.WP] * len(word)
         loguru.logger.debug(
-            "(attempt: '{}', word: '{}') => [] (correct attempt)", attempt, word
+            "(attempt: '{}', word: '{}') => {} (correct attempt)", attempt, word, result
         )
-        return []
+        return result
 
     # look for good positioned letters
     available_word_letters = [letter for letter in word]
     result = len(attempt) * [LetterPositionStatus.NP]
     for idx, v in enumerate(attempt):
         if word[idx] == v:
-            result[idx] = LetterPositionStatus.GP
+            result[idx] = LetterPositionStatus.WP
             available_word_letters[idx] = None
 
     # look for bad positioned letters
     for idx, v in enumerate(attempt):
-        if result[idx] == LetterPositionStatus.GP:
+        if result[idx] == LetterPositionStatus.WP:
             continue
         try:
             awl_idx = available_word_letters.index(v)
-            result[idx] = LetterPositionStatus.BP
+            result[idx] = LetterPositionStatus.MP
             available_word_letters[awl_idx] = None
         except ValueError:
             pass

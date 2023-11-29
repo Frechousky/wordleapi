@@ -13,19 +13,6 @@ def now_yyyymmdd() -> str:
     return datetime.datetime.now(pytz.timezone("Europe/Paris")).strftime("%Y%m%d")
 
 
-def strip_lower(s: str) -> str | None:
-    """
-    Args:
-        s: string to process
-
-    Returns:
-        Stripped/lowercase string or None if s is None
-    """
-    if s is None:
-        return None
-    return s.strip().lower()
-
-
 def pick_random_element(seq: list | tuple):
     """
     Picks a random element from a tuple or list.

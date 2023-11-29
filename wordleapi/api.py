@@ -3,145 +3,278 @@ import os
 
 import dotenv
 import flask
+import flask_openapi3
 import flask_cors
 import loguru
+import pydantic
 
 from wordleapi.core import (
     ATTEMPT_REGEX,
-    AttemptInvalidFormatError,
-    AttemptIsEmptyError,
-    AttemptNotInWhitelistError,
-    InvalidAttemptLengthError,
     compute_attempt_result,
     get_today_word,
     load_wordlefile,
-    validate_attempt,
+    AVAILABLE_WORD_LENGTHS,
+    LetterPositionStatus as LPS,
 )
 from wordleapi.db.model import db
 from wordleapi.env import DotEnvKey, check_dot_env
-from wordleapi.utils import strip_lower
+
+
+class AttemptRequest(pydantic.BaseModel):
+    """Player attempt request to process."""
+
+    attempt: str = pydantic.Field(
+        title="Player attempt",
+        description="Player attempt to process.",
+        pattern=ATTEMPT_REGEX,
+        min_length=min(AVAILABLE_WORD_LENGTHS),
+        max_length=max(AVAILABLE_WORD_LENGTHS),
+    )
+
+    model_config = {
+        "openapi_extra": {
+            "examples": {
+                "req-1": {
+                    "summary": "1 - Valid attempt request (correct guess)",
+                    "value": {"attempt": "ARBRES"},
+                },
+                "req-2": {
+                    "summary": "2 - Valid attempt request (incorrect guess)",
+                    "value": {"attempt": "ARTERE"},
+                },
+                "req-3": {
+                    "summary": "3 - Invalid attempt request (attempt is too short)",
+                    "value": {"attempt": "ARB"},
+                },
+                "req-4": {
+                    "summary": "4 - Invalid attempt request (attempt is not a whitelisted word)",
+                    "value": {"attempt": "ABCDEF"},
+                },
+            }
+        }
+    }
+
+
+class AttemptResponse(pydantic.BaseModel):
+    """Player attempt result response."""
+
+    result: list[LPS] = pydantic.Field(
+        title="Attempt result",
+        description=f"Contains position status for each letter from request attempt:"
+        f"{LPS.__doc__}",
+    )
+
+    model_config = {
+        "openapi_extra": {
+            "examples": {
+                "resp-1": {
+                    "summary": "1 - Valid attempt response (correct guess)",
+                    "value": {"result": [0, 0, 0, 0, 0, 0]},
+                },
+                "resp-2": {
+                    "summary": "2 - Valid attempt response (incorrect guess)",
+                    "value": {"result": [0, 0, 2, 1, 1, 2]},
+                },
+            }
+        }
+    }
 
 
 class ErrorCode(enum.Enum):
-    INVALID_ATTEMPT_LENGTH = 100
-    EMPTY_ATTEMPT = 101
-    INVALID_ATTEMPT_FORMAT = 102
-    ATTEMPT_NOT_IN_WHITELIST = 103
-    EMPTY_PAYLOAD = 104
-    INVALID_CONTENT_TYPE = 105
+    """
+    100 (invalid payload),
+    101 (attempt not in whitelist)
+    """
+
+    INVALID_PAYLOAD = 100
+    ATTEMPT_NOT_IN_WHITELIST = 101
 
 
-def build_error_response(code: ErrorCode, error_msg: str) -> dict:
-    return {"code": code.value, "error_msg": error_msg}
+class ErrorResponse(pydantic.BaseModel):
+    """API error response."""
+
+    code: ErrorCode = pydantic.Field(
+        title="API error code",
+        description="Computer friendly error code:" f"{ErrorCode.__doc__}",
+    )
+    error_msg: str = pydantic.Field(
+        title="API error message",
+        description="Human readable descriptive error message",
+    )
+
+    model_config = {
+        "openapi_extra": {
+            "examples": {
+                "resp-3": {
+                    "summary": "3 - Invalid attempt response (attempt is too short)",
+                    "value": {
+                        "code": 100,
+                        "error_msg": f"Field 'attempt' is invalid or missing (String should have at least {min(AVAILABLE_WORD_LENGTHS)} characters)",
+                    },
+                },
+                "resp-4": {
+                    "summary": "4 - Invalid attempt response (attempt is not a whitelisted word)",
+                    "value": {"code": 101, "error_msg": "'ABCDEF' is not in whitelist"},
+                },
+            }
+        }
+    }
 
 
-def handle_player_attempt(whitelist: tuple[str]):
-    if not flask.request.is_json:
-        return build_error_response(
-            ErrorCode.INVALID_CONTENT_TYPE,
-            "no JSON payload, make sure to send JSON data with Content-Type=application/json header",
-        ), 415
-
-    payload = flask.request.get_json(silent=True)
-    loguru.logger.debug("(payload: '{}')", payload)
-    if not payload:
-        return build_error_response(
-            ErrorCode.EMPTY_PAYLOAD,
-            "no JSON payload, make sure to send JSON data with Content-Type=application/json header",
-        ), 400
-
-    attempt = strip_lower(payload.get("attempt"))
-    try:
-        validate_attempt(attempt, whitelist)
-    except InvalidAttemptLengthError as e:
-        return (
-            build_error_response(
-                ErrorCode.INVALID_ATTEMPT_LENGTH,
-                f"'{attempt}' is not {e.expected_length()} letters long",
-            ),
-            422,
-        )
-    except AttemptIsEmptyError:
-        return (
-            build_error_response(
-                ErrorCode.EMPTY_ATTEMPT,
-                "no attempt value submitted",
-            ),
-            422,
-        )
-    except AttemptInvalidFormatError:
-        return (
-            build_error_response(
-                ErrorCode.INVALID_ATTEMPT_FORMAT,
-                f"'{attempt}' format is invalid (should match regex {ATTEMPT_REGEX})",
-            ),
-            422,
-        )
-    except AttemptNotInWhitelistError:
-        return (
-            build_error_response(
-                ErrorCode.ATTEMPT_NOT_IN_WHITELIST,
-                f"'{attempt}' is not in whitelist",
-            ),
-            422,
-        )
-    word = get_today_word(whitelist)
-    attempt_result = compute_attempt_result(attempt, word)
-
-    if not attempt_result:
-        return {"success": True}
-
-    return {"success": False, "result": attempt_result}
+def _build_json_response(data: str, status_code: int) -> flask.Response:
+    response = flask.make_response(data)
+    response.headers["Content-Type"] = "application/json"
+    response.status_code = status_code
+    return response
 
 
-def create_app() -> flask.Flask:
+def make_validation_error_response(e: pydantic.ValidationError) -> flask.Response:
+    """
+    Create a Flask response for a validation error.
+
+    Args:
+        e: The ValidationError object containing the details of the error.
+
+    Returns:
+        FlaskResponse: A Flask Response object with the JSON representation of the error.
+    """
+    return _build_json_response(
+        ErrorResponse(
+            code=ErrorCode.INVALID_PAYLOAD,
+            error_msg=f"Field '{e.errors()[0].get('loc')[0]}' is invalid or missing ({e.errors()[0].get('msg')})",
+        ).model_dump_json(),
+        422,
+    )
+
+
+def create_app() -> flask_openapi3.OpenAPI:
+    """Create flask app"""
     loguru.logger.info("Init app")
 
+    # ENV variables loading/checking
     if dotenv.load_dotenv():
         loguru.logger.info("Env variables loaded from .env file")
     else:
         loguru.logger.info(
             "No env variable loaded from .env file (file could be missing or empty)"
         )
-
     check_dot_env()
     loguru.logger.info("Required env variables loaded")
 
-    app = flask.Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(DotEnvKey.DATABASE_URI.value)
+    app = flask_openapi3.OpenAPI(
+        __name__, validation_error_callback=make_validation_error_response
+    )
 
+    # CORS configuration
     loguru.logger.info("Configure CORS")
     flask_cors.CORS(app)
 
+    # DATABASE initialization
     loguru.logger.info("Init database")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(DotEnvKey.DATABASE_URI.value)
     db.init_app(app)
-
     with app.app_context():
         db.create_all()
 
-    whitelist_6_letters = load_wordlefile(
-        os.getenv(DotEnvKey.WORDLEFILE_6_LETTERS.value)
-    )
-    whitelist_7_letters = load_wordlefile(
-        os.getenv(DotEnvKey.WORDLEFILE_7_LETTERS.value)
-    )
-    whitelist_8_letters = load_wordlefile(
-        os.getenv(DotEnvKey.WORDLEFILE_8_LETTERS.value)
-    )
+    # WORDLE FILES loading (contains playable words)
+    whitelists_by_word_length = {
+        6: load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_6_LETTERS.value)),
+        7: load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_7_LETTERS.value)),
+        8: load_wordlefile(os.getenv(DotEnvKey.WORDLEFILE_8_LETTERS.value)),
+    }
+    if list(whitelists_by_word_length.keys()) != AVAILABLE_WORD_LENGTHS:
+        loguru.logger.error(
+            "Invalid whitelist by word length dict, make sure there is one wordle file for each available word length"
+        )
+        return None
 
-    loguru.logger.info("Init API routes")
+    # ROUTES
+    loguru.logger.info("Init API route")
 
-    @app.route("/word/6/attempt", methods=["POST"])
-    def handle_player_attempt_six_letters():
-        return handle_player_attempt(whitelist_6_letters)
+    @app.post("/attempt", responses={200: AttemptResponse, 422: ErrorResponse})
+    def post_attempt(body: AttemptRequest):
+        """
+        Process player attempt
 
-    @app.route("/word/7/attempt", methods=["POST"])
-    def handle_player_attempt_seven_letters():
-        return handle_player_attempt(whitelist_7_letters)
+        This is the wordle API endpoint.
 
-    @app.route("/word/8/attempt", methods=["POST"])
-    def handle_player_attempt_eight_letters():
-        return handle_player_attempt(whitelist_8_letters)
+
+        <h3>What is wordle ?</h3>
+
+        Wordle is a free online word game developed in 2021 by Josh Wardle.
+        This game is a direct adaptation of the American television game Lingo which asks you to guess a word
+        through several attempts, indicating for each of them the position of the well-placed and misplaced letters.
+        (source: Google)
+
+        This API generates 3 words every day (resp 6, 7 and 8 letters long) and clients try to guess these words by submitting their attempt.
+        Submit a 6 letters length word attempt to guess today 6 letters word, same with 7 or 8 letters word.
+
+
+        <h3>Examples</h3>
+
+        <h4>1 - Valid attempt request/response (correct guess)</h4>
+
+        Word to guess is 'ARBRES'
+        <pre>
+        Request  => { "attempt": "ARBRES" }
+        Response <= { "result": [0, 0, 0, 0, 0, 0] }
+        </pre>
+        Why is result [0, 0, 0, 0, 0, 0] ?
+        All letters from player attempt ('ARBRES') are well-placed in today word ('ARBRES')
+        => Client guessed the word
+
+
+        <h4>2 - Valid attempt request/response (incorrect guess)</h4>
+
+        Word to guess is 'ARBRES'
+        <pre>
+        Request  => { "attempt": "ARTERE" }<
+        Response <= { "result": [0, 0, 2, 1, 1, 2] }
+        </pre>
+        Why is result [0, 0, 2, 1, 1, 2] ?
+        'A' is well-placed in 'ARBRES' (0)
+        'R' is well-placed in 'ARBRES' (0)
+        'T' is not present in 'ARBRES' (2)
+        'E' is misplaced in 'ARBRES' (1)
+        'R' is misplaced in 'ARBRES' (1)
+        'E' is not present in 'ARBRES' (2) (there is only one E in 'ARBRES')
+        => Client did not guess the word (he may try again)
+
+
+        <h4>3 - Invalid attempt request/response (attempt is too short)</h4>
+
+        Word to guess is 'ARBRES'
+        <pre>
+        Request  => { "attempt": "ARB" }
+        Response <= { "code": 100, "error_msg": "Field 'attempt' is invalid or missing (String should have at least 6 characters)" }
+        </pre>
+
+
+        <h4>4 - Invalid attempt request/response (attempt is not a whitelisted word)</h4>
+
+        Some words are whitelisted, only these words may be the word to guess and only there word may be submitted by player.
+        'ABCDEF' is not a whitelisted word
+        <pre>
+        Request  => { "attempt": "ABCDEF" }
+        Response <= { "code": 101, "error_msg": "'ABCDEF' is not in whitelist" }
+        </pre>
+        """
+        whitelist = whitelists_by_word_length.get(len(body.attempt))
+        attempt = body.attempt.lower()
+        if attempt not in whitelist:
+            return _build_json_response(
+                ErrorResponse(
+                    code=ErrorCode.ATTEMPT_NOT_IN_WHITELIST,
+                    error_msg=f"'{body.attempt}' is not in whitelist",
+                ).model_dump_json(),
+                422,
+            )
+        word = get_today_word(whitelist)
+        attempt_result = compute_attempt_result(attempt, word)
+        return _build_json_response(
+            AttemptResponse(result=attempt_result).model_dump_json(),
+            200,
+        )
 
     loguru.logger.info("App init is successful")
     return app
