@@ -83,7 +83,7 @@ def compute_attempt_result(attempt: str, word: str) -> list[LetterPositionStatus
 
 def load_whitelist_file(filename: str) -> tuple[str]:
     """
-    Load whitelist_file and extract list of words from it.
+    Load whitelist file and extract list of words from it.
 
     Args:
         filename: file to read
@@ -94,7 +94,7 @@ def load_whitelist_file(filename: str) -> tuple[str]:
     Raises:
         OSError: if file opening fails
     """
-    loguru.logger.info("Load whitelist_file '{}'", filename)
+    loguru.logger.info("Load whitelist file '{}'", filename)
     with open(filename) as f:
         whitelist = tuple([word for word in f.read().split("\n") if word != ""])
         loguru.logger.info("Found {} words in '{}'", len(whitelist), filename)
