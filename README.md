@@ -15,7 +15,6 @@ This API generates 3 words every day (resp 6, 7 and 8 letters long) and clients 
 
 Submit a 6 letters length word attempt to guess today 6 letters word, same with 7 or 8 letters word.
 
-
 ### Examples
 
 #### 1 - Valid attempt request/response (correct guess)</h4>
@@ -28,7 +27,6 @@ Why is result [0, 0, 0, 0, 0, 0] ?
 
 - All letters from player attempt ('ARBRES') are well-placed in today word ('ARBRES')
 - Client guessed the word
-
 
 #### 2 - Valid attempt request/response (incorrect guess)
 
@@ -46,21 +44,18 @@ Why is result [0, 0, 2, 1, 1, 2] ?
 - 'E' is not present in 'ARBRES' (2) (there is only one E in 'ARBRES')
 - Client did not guess the word (he may try again)
 
-
 #### 3 - Invalid attempt request/response (attempt is too short)
 
 - Word to guess is 'ARBRES'
 - `Request  => { "attempt": "ARB" }`
 - `Response <= { "code": 100, "error_msg": "Field 'attempt' is invalid or missing (String should have at least 6 characters)" }`
 
-
 #### 4 - Invalid attempt request/response (attempt is not a whitelisted word)
 
-- Some words are whitelisted, only these words may be the word to guess and only there word may be submitted by player (see [whitelist_files folder](whitelistfiles))
+- Some words are whitelisted, only these words may be the word to guess and only these words may be submitted by player (see [whitelist_files folder](whitelist_files))
 - 'ABCDEF' is not a whitelisted word
 - `Request  => { "attempt": "ABCDEF" }`
 - `Response <= { "code": 101, "error_msg": "'ABCDEF' is not in whitelist" }`
-
 
 ## Requirements
 
