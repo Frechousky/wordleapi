@@ -194,3 +194,21 @@ def test__when_attempt_not_in_whitelist__returns_http_422(
         "code": ErrorCode.ATTEMPT_NOT_IN_WHITELIST.value,
         "error_msg": f"'{attempt}' is not in whitelist",
     }
+
+
+def test__when_http_method_is_not_allowed__returns_http_405(
+    test_client: FlaskClient,
+):
+    # only POST is allowed
+    not_allowed_http_method_callbacks = [
+        test_client.get,
+        test_client.delete,
+        test_client.put,
+        test_client.patch,
+    ]
+    for callback in not_allowed_http_method_callbacks:
+        resp = callback(path="/attempt", json={"attempt": "AZERTY"})
+        resp_json_data = json.loads(resp.data)
+
+        assert resp.status_code == 405
+        assert resp_json_data.get("code") == ErrorCode.METHOD_NOT_ALLOWED.value

@@ -7,6 +7,7 @@ import flask_openapi3
 import flask_cors
 import loguru
 import pydantic
+import werkzeug
 
 from wordleapi.core import (
     ATTEMPT_REGEX,
@@ -84,10 +85,12 @@ class ErrorCode(enum.Enum):
     """
     100 (invalid payload),
     101 (attempt not in whitelist)
+    102 (HTTP method not allowed)
     """
 
     INVALID_PAYLOAD = 100
     ATTEMPT_NOT_IN_WHITELIST = 101
+    METHOD_NOT_ALLOWED = 102
 
 
 class ErrorResponse(pydantic.BaseModel):
@@ -116,7 +119,14 @@ class ErrorResponse(pydantic.BaseModel):
                     "summary": "4 - Invalid attempt response (attempt is not a whitelisted word)",
                     "value": {"code": 101, "error_msg": "'ABCDEF' is not in whitelist"},
                 },
-            }
+                "resp-5": {
+                    "summary": "5 - Invalid HTTP method",
+                    "value": {
+                        "code": 102,
+                        "error_msg": "Method not allowed, accepted methods are ['OPTIONS', 'POST']",
+                    },
+                },
+            },
         }
     }
 
@@ -191,7 +201,10 @@ def create_app() -> flask_openapi3.OpenAPI:
     # ROUTES
     loguru.logger.info("Init API route")
 
-    @app.post("/attempt", responses={200: AttemptResponse, 422: ErrorResponse})
+    @app.post(
+        "/attempt",
+        responses={200: AttemptResponse, 422: ErrorResponse, 405: ErrorResponse},
+    )
     def post_attempt(body: AttemptRequest):
         """
         Process player attempt
@@ -274,6 +287,16 @@ def create_app() -> flask_openapi3.OpenAPI:
         return _build_json_response(
             AttemptResponse(result=attempt_result).model_dump_json(),
             200,
+        )
+
+    @app.errorhandler(405)
+    def handle_405(e: werkzeug.exceptions.MethodNotAllowed):
+        return _build_json_response(
+            ErrorResponse(
+                code=ErrorCode.METHOD_NOT_ALLOWED,
+                error_msg=f"Method not allowed, accepted methods are {e.valid_methods}",
+            ).model_dump_json(),
+            405,
         )
 
     loguru.logger.info("App init is successful")
