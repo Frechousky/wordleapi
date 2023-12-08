@@ -1,0 +1,303 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "OpenAPI",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/attempt": {
+            "post": {
+                "summary": "Process player attempt",
+                "description": "</br>This is the wordle API endpoint.</br></br></br><h3>What is wordle ?</h3></br></br>Wordle is a free online word game developed in 2021 by Josh Wardle.</br>This game is a direct adaptation of the American television game Lingo which asks you to guess a word</br>through several attempts, indicating for each of them the position of the well-placed and misplaced letters.</br>(source: Google)</br></br>This API generates 3 words every day (resp 6, 7 and 8 letters long) and clients try to guess these words by submitting their attempt.</br>Submit a 6 letters length word attempt to guess today 6 letters word, same with 7 or 8 letters word.</br></br></br><h3>Examples</h3></br></br><h4>1 - Valid attempt request/response (correct guess)</h4></br></br>Word to guess is 'ARBRES'</br><pre></br>Request  => { \"attempt\": \"ARBRES\" }</br>Response <= { \"result\": [0, 0, 0, 0, 0, 0] }</br></pre></br>Why is result [0, 0, 0, 0, 0, 0] ?</br>All letters from player attempt ('ARBRES') are well-placed in today word ('ARBRES')</br>=> Client guessed the word</br></br></br><h4>2 - Valid attempt request/response (incorrect guess)</h4></br></br>Word to guess is 'ARBRES'</br><pre></br>Request  => { \"attempt\": \"ARTERE\" }<</br>Response <= { \"result\": [0, 0, 2, 1, 1, 2] }</br></pre></br>Why is result [0, 0, 2, 1, 1, 2] ?</br>'A' is well-placed in 'ARBRES' (0)</br>'R' is well-placed in 'ARBRES' (0)</br>'T' is not present in 'ARBRES' (2)</br>'E' is misplaced in 'ARBRES' (1)</br>'R' is misplaced in 'ARBRES' (1)</br>'E' is not present in 'ARBRES' (2) (there is only one E in 'ARBRES')</br>=> Client did not guess the word (he may try again)</br></br></br><h4>3 - Invalid attempt request/response (attempt is too short)</h4></br></br>Word to guess is 'ARBRES'</br><pre></br>Request  => { \"attempt\": \"ARB\" }</br>Response <= { \"code\": 100, \"error_msg\": \"Field 'attempt' is invalid or missing (String should have at least 6 characters)\" }</br></pre></br></br></br><h4>4 - Invalid attempt request/response (attempt is not a whitelisted word)</h4></br></br>Some words are whitelisted, only these words may be the word to guess and only there word may be submitted by player.</br>'ABCDEF' is not a whitelisted word</br><pre></br>Request  => { \"attempt\": \"ABCDEF\" }</br>Response <= { \"code\": 101, \"error_msg\": \"'ABCDEF' is not in whitelist\" }</br></pre>",
+                "operationId": "post_attempt_attempt_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AttemptRequest"
+                            },
+                            "examples": {
+                                "req-1": {
+                                    "summary": "1 - Valid attempt request (correct guess)",
+                                    "value": {
+                                        "attempt": "ARBRES"
+                                    }
+                                },
+                                "req-2": {
+                                    "summary": "2 - Valid attempt request (incorrect guess)",
+                                    "value": {
+                                        "attempt": "ARTERE"
+                                    }
+                                },
+                                "req-3": {
+                                    "summary": "3 - Invalid attempt request (attempt is too short)",
+                                    "value": {
+                                        "attempt": "ARB"
+                                    }
+                                },
+                                "req-4": {
+                                    "summary": "4 - Invalid attempt request (attempt is not a whitelisted word)",
+                                    "value": {
+                                        "attempt": "ABCDEF"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Player attempt result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AttemptResponse"
+                                },
+                                "examples": {
+                                    "resp-1": {
+                                        "summary": "1 - Valid attempt response (correct guess)",
+                                        "value": {
+                                            "result": [
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ]
+                                        }
+                                    },
+                                    "resp-2": {
+                                        "summary": "2 - Valid attempt response (incorrect guess)",
+                                        "value": {
+                                            "result": [
+                                                0,
+                                                0,
+                                                2,
+                                                1,
+                                                1,
+                                                2
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "405": {
+                        "description": "An error occurred",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "resp-3": {
+                                        "summary": "3 - Invalid attempt response (attempt is too short) (HTTP 422)",
+                                        "value": {
+                                            "code": 100,
+                                            "error_msg": "Field 'attempt' is invalid or missing (String should have at least 6 characters)"
+                                        }
+                                    },
+                                    "resp-4": {
+                                        "summary": "4 - Invalid attempt response (attempt is not a whitelisted word) (HTTP 422)",
+                                        "value": {
+                                            "code": 101,
+                                            "error_msg": "'ABCDEF' is not in whitelist"
+                                        }
+                                    },
+                                    "resp-5": {
+                                        "summary": "5 - Invalid HTTP method (HTTP 405)",
+                                        "value": {
+                                            "code": 102,
+                                            "error_msg": "Method not allowed, accepted methods are ['OPTIONS', 'POST']"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "An error occurred",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "resp-3": {
+                                        "summary": "3 - Invalid attempt response (attempt is too short) (HTTP 422)",
+                                        "value": {
+                                            "code": 100,
+                                            "error_msg": "Field 'attempt' is invalid or missing (String should have at least 6 characters)"
+                                        }
+                                    },
+                                    "resp-4": {
+                                        "summary": "4 - Invalid attempt response (attempt is not a whitelisted word) (HTTP 422)",
+                                        "value": {
+                                            "code": 101,
+                                            "error_msg": "'ABCDEF' is not in whitelist"
+                                        }
+                                    },
+                                    "resp-5": {
+                                        "summary": "5 - Invalid HTTP method (HTTP 405)",
+                                        "value": {
+                                            "code": 102,
+                                            "error_msg": "Method not allowed, accepted methods are ['OPTIONS', 'POST']"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AttemptRequest": {
+                "title": "AttemptRequest",
+                "required": [
+                    "attempt"
+                ],
+                "type": "object",
+                "properties": {
+                    "attempt": {
+                        "title": "Player attempt",
+                        "maxLength": 8,
+                        "minLength": 6,
+                        "pattern": "^[a-zA-Z]+$",
+                        "type": "string",
+                        "description": "Player attempt to process."
+                    }
+                },
+                "description": "Player attempt request to process."
+            },
+            "AttemptResponse": {
+                "title": "AttemptResponse",
+                "required": [
+                    "result"
+                ],
+                "type": "object",
+                "properties": {
+                    "result": {
+                        "title": "Attempt result",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LetterPositionStatus"
+                        },
+                        "description": "Contains position status for each letter from request attempt:\n    0 (well-placed),\n    1 (misplaced),\n    2 (not present)\n    "
+                    }
+                },
+                "description": "Player attempt result response."
+            },
+            "LetterPositionStatus": {
+                "title": "LetterPositionStatus",
+                "enum": [
+                    0,
+                    1,
+                    2
+                ],
+                "type": "integer",
+                "description": "0 (well-placed),\n1 (misplaced),\n2 (not present)"
+            },
+            "ErrorResponse": {
+                "title": "ErrorResponse",
+                "required": [
+                    "code",
+                    "error_msg"
+                ],
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "title": "API error code",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ErrorCode"
+                            }
+                        ],
+                        "description": "Computer friendly error code:\n    100 (invalid payload),\n    101 (attempt not in whitelist)\n    102 (HTTP method not allowed)\n    "
+                    },
+                    "error_msg": {
+                        "title": "API error message",
+                        "type": "string",
+                        "description": "Human readable descriptive error message"
+                    }
+                },
+                "description": "API error response."
+            },
+            "ErrorCode": {
+                "title": "ErrorCode",
+                "enum": [
+                    100,
+                    101,
+                    102
+                ],
+                "type": "integer",
+                "description": "100 (invalid payload),\n101 (attempt not in whitelist)\n102 (HTTP method not allowed)"
+            },
+            "ValidationErrorModel": {
+                "title": "ValidationErrorModel",
+                "type": "object",
+                "properties": {
+                    "loc": {
+                        "title": "Location",
+                        "anyOf": [
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "the error's location as a list. "
+                    },
+                    "msg": {
+                        "title": "Message",
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "a computer-readable identifier of the error type."
+                    },
+                    "type_": {
+                        "title": "Error Type",
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "a human readable explanation of the error."
+                    },
+                    "ctx": {
+                        "title": "Error context",
+                        "anyOf": [
+                            {
+                                "type": "object"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "an optional object which contains values required to render the error message."
+                    }
+                }
+            }
+        }
+    }
+}
