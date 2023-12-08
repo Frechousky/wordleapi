@@ -44,3 +44,12 @@ jobs:
         run: |
           mv .env.inte .env
           make test-inte
+
+      # Update openapi.json
+      - name: Generate openapi.json
+        run: make generate-openapi-json
+      - name: Commit openapi.json
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update openapi.json
+          file_pattern: 'openapi.json'
