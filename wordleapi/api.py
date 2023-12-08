@@ -67,6 +67,7 @@ class AttemptResponse(pydantic.BaseModel):
 
     model_config = {
         "openapi_extra": {
+            "description": "Player attempt result",
             "examples": {
                 "resp-1": {
                     "summary": "1 - Valid attempt response (correct guess)",
@@ -76,7 +77,7 @@ class AttemptResponse(pydantic.BaseModel):
                     "summary": "2 - Valid attempt response (incorrect guess)",
                     "value": {"result": [0, 0, 2, 1, 1, 2]},
                 },
-            }
+            },
         }
     }
 
@@ -107,20 +108,21 @@ class ErrorResponse(pydantic.BaseModel):
 
     model_config = {
         "openapi_extra": {
+            "description": "An error occurred",
             "examples": {
                 "resp-3": {
-                    "summary": "3 - Invalid attempt response (attempt is too short)",
+                    "summary": "3 - Invalid attempt response (attempt is too short) (HTTP 422)",
                     "value": {
                         "code": 100,
                         "error_msg": f"Field 'attempt' is invalid or missing (String should have at least {min(AVAILABLE_WORD_LENGTHS)} characters)",
                     },
                 },
                 "resp-4": {
-                    "summary": "4 - Invalid attempt response (attempt is not a whitelisted word)",
+                    "summary": "4 - Invalid attempt response (attempt is not a whitelisted word) (HTTP 422)",
                     "value": {"code": 101, "error_msg": "'ABCDEF' is not in whitelist"},
                 },
                 "resp-5": {
-                    "summary": "5 - Invalid HTTP method",
+                    "summary": "5 - Invalid HTTP method (HTTP 405)",
                     "value": {
                         "code": 102,
                         "error_msg": "Method not allowed, accepted methods are ['OPTIONS', 'POST']",
@@ -203,7 +205,12 @@ def create_app() -> flask_openapi3.OpenAPI:
 
     @app.post(
         "/attempt",
-        responses={200: AttemptResponse, 422: ErrorResponse, 405: ErrorResponse},
+        responses={
+            200: AttemptResponse,
+            405: ErrorResponse,
+            422: ErrorResponse,
+            "default": None,
+        },
     )
     def post_attempt(body: AttemptRequest):
         """
