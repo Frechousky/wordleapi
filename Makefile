@@ -39,4 +39,7 @@ dotenv-inte:
 
 dotenv: dotenv-default dotenv-inte
 
-.PHONY: run test test-unit test-inte install-deps install-all-deps update-deps lint lint-fix format format-check dotenv-default dotenv-inte dotenv
+generate-openapi-json:
+	pipenv run flask -A wordleapi/api.py openapi -o openapi.json -i 4
+
+.PHONY: run test test-unit test-inte install-deps install-all-deps update-deps lint lint-fix format format-check dotenv-default dotenv-inte dotenv generate-openapi-json
